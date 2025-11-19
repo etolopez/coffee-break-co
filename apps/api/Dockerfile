@@ -25,6 +25,9 @@ RUN npm ci
 COPY apps/api/src ./src
 COPY apps/api/prisma ./prisma
 
+# Copy data directory (for JSON files)
+COPY data ./data
+
 # Build the API application
 RUN npm run build
 
@@ -32,4 +35,5 @@ RUN npm run build
 EXPOSE 4000
 
 # Start the application
-CMD ["npm", "run", "start:prod"]
+WORKDIR /app
+CMD ["node", "apps/api/dist/main.js"]
