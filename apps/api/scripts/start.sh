@@ -1,20 +1,20 @@
 #!/bin/sh
 # Startup script for Railway deployment
 # Runs migrations and seeds database before starting the app
+# This script runs from /app/apps/api (set by Dockerfile WORKDIR)
 
 set -e
 
 echo "🚀 Starting Coffee Break API..."
 
-# Change to API directory (handle both Docker paths)
-if [ -d "/app/apps/api" ]; then
-  cd /app/apps/api
-elif [ -d "apps/api" ]; then
-  cd apps/api
-else
-  echo "❌ Cannot find apps/api directory"
+# We're already in /app/apps/api from Dockerfile WORKDIR
+# Verify we're in the right place
+if [ ! -f "package.json" ]; then
+  echo "❌ package.json not found. Current directory: $(pwd)"
   exit 1
 fi
+
+echo "📁 Working directory: $(pwd)"
 
 # Check if DATABASE_URL is set
 if [ -z "$DATABASE_URL" ]; then

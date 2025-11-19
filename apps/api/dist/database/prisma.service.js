@@ -1,133 +1,86 @@
 "use strict";
 /**
- * Prisma service for database operations
- * Handles connection lifecycle and provides logging integration
+ * Prisma Service
+ * Provides database access through Prisma Client
+ * Singleton service that manages Prisma Client lifecycle
  */
+var PrismaService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrismaService = void 0;
 const tslib_1 = require("tslib");
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
-const shared_1 = require("@coffee-passport/shared");
 /**
- * Prisma service that manages database connections
- * Integrates with Winston logging and handles graceful shutdown
+ * Prisma Service
+ * Extends PrismaClient and implements lifecycle hooks
+ * Ensures proper connection management and cleanup
  */
-let PrismaService = class PrismaService extends client_1.PrismaClient {
-    logger = (0, shared_1.createLogger)({
-        service: 'coffee-passport-prisma',
-        level: process.env.LOG_LEVEL || 'info'
-    });
-    constructor() {
-        super({
-            log: [
-                {
-                    emit: 'event',
-                    level: 'query',
-                },
-                {
-                    emit: 'event',
-                    level: 'error',
-                },
-                {
-                    emit: 'event',
-                    level: 'info',
-                },
-                {
-                    emit: 'event',
-                    level: 'warn',
-                },
-            ],
-        });
-        // Log database queries in development
-        if (process.env.NODE_ENV === 'development') {
-            this.$on('query', (e) => {
-                (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.DB_QUERY, {
-                    query: e.query,
-                    params: e.params,
-                    duration: e.duration,
-                }, 'Database query executed');
-            });
-        }
-        // Log database errors
-        this.$on('error', (e) => {
-            (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.DB_ERROR, {
-                target: e.target,
-                timestamp: e.timestamp,
-            }, 'Database error occurred');
-        });
-        // Log database info
-        this.$on('info', (e) => {
-            (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.DB_QUERY, {
-                message: e.message,
-                target: e.target,
-            }, 'Database info');
-        });
-        // Log database warnings
-        this.$on('warn', (e) => {
-            (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.DB_QUERY, {
-                message: e.message,
-                target: e.target,
-            }, 'Database warning');
-        });
-    }
+let PrismaService = PrismaService_1 = class PrismaService extends client_1.PrismaClient {
+    logger = new common_1.Logger(PrismaService_1.name);
     /**
-     * Initialize database connection
+     * Initialize Prisma Client on module initialization
+     * Connects to the database and logs connection status
+     * Provides helpful error messages if DATABASE_URL is missing
      */
     async onModuleInit() {
         try {
-            (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.EXTERNAL_REQUEST, {}, 'Connecting to database');
+            // Check if DATABASE_URL is set
+            const databaseUrl = process.env['DATABASE_URL'];
+            if (!databaseUrl) {
+                this.logger.error('❌ DATABASE_URL environment variable is not set!');
+                this.logger.error('📝 Please add PostgreSQL database to Railway:');
+                this.logger.error('   1. Go to Railway project → "+ New" → "Database" → "Add PostgreSQL"');
+                this.logger.error('   2. Railway will automatically set DATABASE_URL');
+                this.logger.error('   3. Then run: npm run prisma:deploy && npm run db:seed');
+                throw new Error('DATABASE_URL is not set. Please add PostgreSQL database to Railway.');
+            }
             await this.$connect();
-            (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.EXTERNAL_RESPONSE, {}, 'Database connection established');
+            this.logger.log('✅ Successfully connected to PostgreSQL database');
         }
         catch (error) {
-            (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.EXTERNAL_ERROR, { error: error.message }, 'Failed to connect to database');
+            this.logger.error('❌ Failed to connect to PostgreSQL database');
+            if (error.message?.includes('DATABASE_URL')) {
+                // Already logged helpful message above
+                throw error;
+            }
+            this.logger.error('Error details:', error.message || error);
+            this.logger.error('📝 Make sure:');
+            this.logger.error('   1. PostgreSQL database is added to Railway');
+            this.logger.error('   2. DATABASE_URL environment variable is set');
+            this.logger.error('   3. Database migrations have been run: npm run prisma:deploy');
             throw error;
         }
     }
     /**
-     * Clean up database connection
+     * Cleanup Prisma Client on module destruction
+     * Disconnects from the database gracefully
      */
     async onModuleDestroy() {
         try {
-            (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.EXTERNAL_REQUEST, {}, 'Disconnecting from database');
             await this.$disconnect();
-            (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.EXTERNAL_RESPONSE, {}, 'Database connection closed');
+            this.logger.log('✅ Disconnected from PostgreSQL database');
         }
         catch (error) {
-            (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.EXTERNAL_ERROR, { error: error.message }, 'Error during database disconnection');
+            this.logger.error('❌ Error disconnecting from PostgreSQL database', error);
         }
     }
     /**
-     * Clean up database on application shutdown
+     * Health check method
+     * Verifies database connectivity
      */
-    async enableShutdownHooks(app) {
-        this.$on('beforeExit', async () => {
-            await app.close();
-        });
-    }
-    /**
-     * Execute a transaction with logging
-     */
-    async $transactionWithLogging(fn, options) {
-        const startTime = Date.now();
+    async isHealthy() {
         try {
-            (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.DB_TRANSACTION, { options }, 'Starting database transaction');
-            const result = await this.$transaction(fn, options);
-            const duration = Date.now() - startTime;
-            (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.DB_TRANSACTION, { duration }, 'Database transaction completed successfully');
-            return result;
+            await this.$queryRaw `SELECT 1`;
+            return true;
         }
         catch (error) {
-            const duration = Date.now() - startTime;
-            (0, shared_1.logWaypoint)(this.logger, shared_1.LOG_WAYPOINTS.DB_ERROR, { duration, error: error.message }, 'Database transaction failed');
-            throw error;
+            this.logger.error('Database health check failed', error);
+            return false;
         }
     }
 };
 exports.PrismaService = PrismaService;
-exports.PrismaService = PrismaService = tslib_1.__decorate([
-    (0, common_1.Injectable)(),
-    tslib_1.__metadata("design:paramtypes", [])
+exports.PrismaService = PrismaService = PrismaService_1 = tslib_1.__decorate([
+    (0, common_1.Injectable)()
 ], PrismaService);
 //# sourceMappingURL=prisma.service.js.map

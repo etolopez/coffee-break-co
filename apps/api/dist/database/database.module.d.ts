@@ -1,10 +1,12 @@
 /**
- * Database module for Coffee Digital Passport API
- * Provides Prisma client and database connection management
+ * Database Module
+ * Global module that provides Prisma service to all modules
+ * Ensures single instance of Prisma Client across the application
  */
 /**
- * Global database module that provides Prisma service
- * to all other modules in the application
+ * Database Module
+ * Makes PrismaService available globally to all modules
+ * No need to import this module in other modules
  */
 export declare class DatabaseModule {
 }

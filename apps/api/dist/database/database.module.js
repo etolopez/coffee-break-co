@@ -1,7 +1,8 @@
 "use strict";
 /**
- * Database module for Coffee Digital Passport API
- * Provides Prisma client and database connection management
+ * Database Module
+ * Global module that provides Prisma service to all modules
+ * Ensures single instance of Prisma Client across the application
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DatabaseModule = void 0;
@@ -9,8 +10,9 @@ const tslib_1 = require("tslib");
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("./prisma.service");
 /**
- * Global database module that provides Prisma service
- * to all other modules in the application
+ * Database Module
+ * Makes PrismaService available globally to all modules
+ * No need to import this module in other modules
  */
 let DatabaseModule = class DatabaseModule {
 };

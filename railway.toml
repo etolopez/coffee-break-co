@@ -3,6 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "apps/api/Dockerfile"
 
 [deploy]
-startCommand = "sh -c 'cd apps/api && node dist/main.js'"
+# Use Dockerfile CMD instead of overriding here
+# The Dockerfile CMD runs ./scripts/start.sh which handles migrations and seeding
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10

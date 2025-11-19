@@ -8,6 +8,7 @@ exports.AppModule = void 0;
 const tslib_1 = require("tslib");
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const database_module_1 = require("./database/database.module");
 const capture_module_1 = require("./capture/capture.module");
 const coffee_module_1 = require("./coffee/coffee.module");
 const seller_module_1 = require("./seller/seller.module");
@@ -23,6 +24,7 @@ exports.AppModule = AppModule = tslib_1.__decorate([
                 isGlobal: true,
                 envFilePath: ['.env', '.env.local'],
             }),
+            database_module_1.DatabaseModule, // Global database module with Prisma service
             capture_module_1.CaptureModule,
             coffee_module_1.CoffeeModule,
             seller_module_1.SellerModule,

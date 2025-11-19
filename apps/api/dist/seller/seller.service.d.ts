@@ -1,11 +1,12 @@
 /**
  * Seller Service
- * Handles seller data operations
- * Reads from persistent JSON file for MVP implementation
+ * Handles seller data operations using PostgreSQL via Prisma
+ * Migrated from JSON file storage to database-backed storage
  */
-import { CoffeeService } from '../coffee/coffee.service';
+import { PrismaService } from '../database/prisma.service';
 /**
- * Seller interface matching the data structure
+ * Seller interface matching the API response structure
+ * Maps Prisma model to API response format
  */
 export interface Seller {
     id: string;
@@ -32,18 +33,19 @@ export interface Seller {
     }[];
 }
 export declare class SellerService {
-    private readonly coffeeService;
+    private readonly prisma;
     private readonly logger;
-    private readonly sellersFile;
-    constructor(coffeeService: CoffeeService);
-    /**
-     * Read sellers data from persistent storage
-     */
-    private readSellersData;
+    constructor(prisma: PrismaService);
     /**
      * Get brand color for seller
+     * Generates consistent color based on seller ID
      */
     private getBrandColor;
+    /**
+     * Map Prisma Seller model to Seller interface
+     * Converts database model to API response format with coffee data
+     */
+    private mapSellerToResponse;
     /**
      * Get all sellers with coffee data
      */
