@@ -25,27 +25,26 @@ RUN npm install && npm install --save-dev @types/node
 # Build shared package
 RUN npm run build
 
-# Copy API package files
+# Copy API package files to apps/api directory
 WORKDIR /app
-COPY apps/api/package.json ./
-COPY apps/api/tsconfig.json ./
-
-# Remove package-lock.json if it exists and install API dependencies fresh
-RUN rm -f package-lock.json && npm install --no-package-lock
-
-# Copy API source code
-COPY apps/api/src ./src
-COPY apps/api/prisma ./prisma
+COPY apps/api/package.json ./apps/api/
+COPY apps/api/tsconfig.json ./apps/api/
+COPY apps/api/src ./apps/api/src
+COPY apps/api/prisma ./apps/api/prisma
 
 # Copy data directory (for JSON files)
 COPY data ./data
 
-# Build the API application
+# Install API dependencies from apps/api directory
+WORKDIR /app/apps/api
+RUN npm install --no-package-lock --legacy-peer-deps
+
+# Build the API application (from apps/api directory where tsconfig.json is)
 RUN npm run build
 
 # Expose port (Railway will set PORT env var)
 EXPOSE 4000
 
 # Start the application
-WORKDIR /app
-CMD ["node", "apps/api/dist/main.js"]
+WORKDIR /app/apps/api
+CMD ["node", "dist/main.js"]
