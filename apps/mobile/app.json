@@ -57,7 +57,7 @@
       "eas": {
         "projectId": "coffee-break-mobile-app"
       },
-      "apiUrl": "http://localhost:4000"
+      "apiUrl": "https://coffee-break-co-production.up.railway.app"
     }
   }
 }
