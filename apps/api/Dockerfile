@@ -4,14 +4,26 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
+# Copy root tsconfig.json (needed by shared package)
+COPY tsconfig.json ./
+
+# Copy root package.json (for shared dependencies)
+COPY package.json ./
+
 # Copy shared package first (monorepo dependency)
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/shared/tsconfig.json ./packages/shared/
 COPY packages/shared/src ./packages/shared/src
 
-# Build shared package
+# Install root dependencies (winston, etc. needed by shared package)
+RUN npm install
+
+# Install shared package dependencies and @types/node
 WORKDIR /app/packages/shared
-RUN npm install && npm run build
+RUN npm install && npm install --save-dev @types/node
+
+# Build shared package
+RUN npm run build
 
 # Copy API package files
 WORKDIR /app
