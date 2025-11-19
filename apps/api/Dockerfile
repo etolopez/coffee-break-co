@@ -27,7 +27,8 @@ RUN npm run build
 
 # Copy API package files
 WORKDIR /app
-COPY apps/api/package*.json ./
+COPY apps/api/package.json ./
+COPY apps/api/package-lock.json ./
 COPY apps/api/tsconfig.json ./
 
 # Install API dependencies
