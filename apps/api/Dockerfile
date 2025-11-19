@@ -28,11 +28,10 @@ RUN npm run build
 # Copy API package files
 WORKDIR /app
 COPY apps/api/package.json ./
-COPY apps/api/package-lock.json ./
 COPY apps/api/tsconfig.json ./
 
-# Install API dependencies
-RUN npm install
+# Remove package-lock.json if it exists and install API dependencies fresh
+RUN rm -f package-lock.json && npm install --no-package-lock
 
 # Copy API source code
 COPY apps/api/src ./src
