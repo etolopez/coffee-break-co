@@ -1,0 +1,15 @@
+/**
+ * Coffee Module
+ * Module for coffee-related functionality
+ */
+
+import { Module } from '@nestjs/common';
+import { CoffeeController } from './coffee.controller';
+import { CoffeeService } from './coffee.service';
+
+@Module({
+  controllers: [CoffeeController],
+  providers: [CoffeeService],
+  exports: [CoffeeService],
+})
+export class CoffeeModule {}
