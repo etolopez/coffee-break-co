@@ -1,143 +1,93 @@
-# 🔧 Troubleshooting Network Errors
+# Mobile App Troubleshooting Guide
 
-## Current Issue: Network Error when fetching data
+## Connection Issues
 
-The mobile app is trying to connect to the API but getting network errors. Here's how to fix it:
+### API Not Responding
 
-## ✅ Step 1: Verify Next.js Web App is Running
+If you see "Network Error" or "Unable to connect to the backend API":
 
-The mobile app connects to the **Next.js web app** (port 3000), not the NestJS backend (port 4000).
+1. **Check Railway Backend Status**
+   - Verify the backend is deployed and running on Railway
+   - Check Railway logs for errors
+   - Test the API directly: `curl https://coffee-break-co-production.up.railway.app/health`
 
-**Check if it's running:**
-```bash
-# In a separate terminal
-cd apps/web
-npm run dev
-```
+2. **Check API URL Configuration**
+   - In development: The app should use `http://10.0.2.2:4000` (Android) or `http://localhost:4000` (iOS)
+   - In production: The app uses the Railway URL from `EXPO_PUBLIC_API_URL` or `app.json`
 
-You should see:
-```
-▲ Next.js 14.x.x
-- Local:        http://localhost:3000
-```
+3. **Verify Database Connection**
+   - Ensure PostgreSQL is set up on Railway
+   - Check that migrations have been run
+   - Verify the database has been seeded
 
-## ✅ Step 2: Test API Endpoints
+### Development Mode
 
-Test if the API is accessible:
+If running locally:
 
-```bash
-# Test from your computer
-curl http://localhost:3000/api/coffee-entries
-curl http://localhost:3000/api/sellers
-```
-
-If these work, the API is running correctly.
-
-## ✅ Step 3: Check API URL Configuration
-
-The mobile app uses different URLs based on platform:
-
-- **Android Emulator**: `http://10.0.2.2:3000` (maps to host's localhost)
-- **iOS Simulator**: `http://localhost:3000`
-- **Physical Device**: Use your computer's IP address (e.g., `http://192.168.1.100:3000`)
-
-**To find your computer's IP:**
-```bash
-# macOS/Linux
-ifconfig | grep "inet " | grep -v 127.0.0.1
-
-# Or
-ipconfig getifaddr en0
-```
-
-## ✅ Step 4: Update API URL for Physical Devices
-
-If testing on a **physical device** (not emulator), update the API URL:
-
-**Option A: Set environment variable**
-```bash
-EXPO_PUBLIC_API_URL=http://YOUR_IP:3000 npm start
-```
-
-**Option B: Update app.json**
-```json
-{
-  "expo": {
-    "extra": {
-      "apiUrl": "http://YOUR_IP:3000"
-    }
-  }
-}
-```
-
-Replace `YOUR_IP` with your computer's local IP address.
-
-## ✅ Step 5: Check CORS Configuration
-
-The Next.js app should have CORS headers configured in `next.config.js`. Verify:
-
-```javascript
-async headers() {
-  return [
-    {
-      source: '/api/:path*',
-      headers: [
-        {
-          key: 'Access-Control-Allow-Origin',
-          value: '*',
-        },
-        // ... other headers
-      ],
-    },
-  ];
-}
-```
-
-## ✅ Step 6: Restart Everything
-
-1. **Stop the Expo dev server** (Ctrl+C)
-2. **Restart Next.js web app** (if needed)
-3. **Clear Expo cache and restart:**
+1. **Start the Backend**
    ```bash
-   cd apps/mobile
-   npx expo start --clear
+   cd apps/api
+   npm run dev
    ```
 
-## 🔍 Debugging Tips
+2. **Check API is Running**
+   ```bash
+   curl http://localhost:4000/health
+   ```
 
-Check the console logs in Expo. You should see:
-- `🔗 API Base URL: http://10.0.2.2:3000` (or your configured URL)
-- `📱 Platform: android` (or ios)
-- `📡 API Request: GET /api/coffee-entries`
+3. **Reload Expo App**
+   - Press `r` in the Expo terminal
+   - Or shake your device and select "Reload"
 
-If you see network errors:
-1. Verify Next.js is running on port 3000
-2. Check the API URL matches your setup
-3. For physical devices, use your computer's IP address
-4. Check firewall isn't blocking port 3000
+## Common Issues
 
-## 🚨 Common Issues
+### "No coffees available"
 
-**"Network Error" on Android Emulator:**
-- Make sure Next.js is running
-- Verify URL is `http://10.0.2.2:3000` (not localhost)
+This usually means:
+- Backend API is not running
+- Database is not seeded
+- Network connection issue
 
-**"Network Error" on Physical Device:**
-- Use your computer's IP address, not localhost
-- Make sure phone and computer are on same WiFi network
-- Check firewall allows connections on port 3000
+**Solution:**
+1. Check Railway backend is deployed
+2. Run database seed: `railway run npm run db:seed`
+3. Verify API endpoint: `curl https://coffee-break-co-production.up.railway.app/api/coffee-entries`
 
-**"CORS Error":**
-- Verify CORS headers in `next.config.js`
-- Restart Next.js after changing config
+### "Network Error"
 
-## 📝 Quick Test
+**Possible causes:**
+- Backend is down
+- Wrong API URL
+- CORS issues
+- Firewall blocking connection
 
-Run this to test the connection:
-```bash
-# Test from Android emulator perspective
-adb shell
-curl http://10.0.2.2:3000/api/coffee-entries
-```
+**Solution:**
+1. Check backend status on Railway
+2. Verify API URL in `apps/mobile/src/config/api.ts`
+3. Check Railway logs for errors
 
-If this works, the connection is fine and the issue is in the app configuration.
+### Database Connection Errors
+
+If you see database-related errors:
+
+1. **Check DATABASE_URL**
+   - Verify it's set in Railway environment variables
+   - Format: `postgresql://user:password@host:port/database`
+
+2. **Run Migrations**
+   ```bash
+   railway run npm run prisma:deploy
+   ```
+
+3. **Seed Database**
+   ```bash
+   railway run npm run db:seed
+   ```
+
+## Getting Help
+
+1. Check Railway deployment logs
+2. Check API health endpoint
+3. Verify database connection
+4. Review `POSTGRESQL_SETUP.md` for database setup
+

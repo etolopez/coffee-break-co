@@ -216,12 +216,12 @@ export default function CoffeesScreen() {
             </Text>
             <Text style={styles.emptyStateSubtext}>
               {coffees.length === 0 
-                ? 'Make sure the Next.js web app is running on port 3000'
+                ? 'Unable to connect to the backend API. Please check your connection.'
                 : 'Try adjusting your search or filters'}
             </Text>
             {coffees.length === 0 && (
               <Text style={styles.helpText}>
-                Run: cd apps/web && npm run dev
+                The backend API should be running on Railway or locally
               </Text>
             )}
           </View>

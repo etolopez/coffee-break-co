@@ -39,12 +39,19 @@ COPY data ./data
 WORKDIR /app/apps/api
 RUN npm install --no-package-lock --legacy-peer-deps
 
+# Generate Prisma Client (needed for build)
+RUN npm run prisma:generate
+
 # Build the API application (from apps/api directory where tsconfig.json is)
 RUN npm run build
 
 # Expose port (Railway will set PORT env var)
 EXPOSE 4000
 
-# Start the application
+# Copy startup script
+COPY apps/api/scripts/start.sh ./apps/api/scripts/start.sh
+RUN chmod +x ./apps/api/scripts/start.sh
+
+# Start the application (runs migrations and seeds before starting)
 WORKDIR /app/apps/api
-CMD ["node", "dist/main.js"]
+CMD ["./scripts/start.sh"]

@@ -5,6 +5,7 @@
 
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from './database/database.module';
 import { CaptureModule } from './capture/capture.module';
 import { CoffeeModule } from './coffee/coffee.module';
 import { SellerModule } from './seller/seller.module';
@@ -17,6 +18,7 @@ import { AppController } from './app.controller';
       isGlobal: true,
       envFilePath: ['.env', '.env.local'],
     }),
+    DatabaseModule, // Global database module with Prisma service
     CaptureModule,
     CoffeeModule,
     SellerModule,

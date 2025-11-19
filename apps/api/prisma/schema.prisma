@@ -56,7 +56,7 @@ model ActorUser {
 model Product {
   id      String @id @default(cuid())
   orgId   String
-  gtin    String @index
+  gtin    String
   name    String
   brand   String
   images  Json   // Array of image URLs
@@ -67,6 +67,7 @@ model Product {
   organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@unique([orgId, gtin])
+  @@index([gtin])
   @@map("products")
 }
 
@@ -91,7 +92,7 @@ model Facility {
 model Lot {
   id        String   @id @default(cuid())
   orgId     String
-  code      String   @index
+  code      String
   metadata  Json     // Lot metadata (harvestYear, origin, varietals, process, altitudeMasl)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -100,13 +101,14 @@ model Lot {
   organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@unique([orgId, code])
+  @@index([code])
   @@map("lots")
 }
 
 model Batch {
   id        String   @id @default(cuid())
   orgId     String
-  code      String   @index
+  code      String
   metadata  Json     // Batch metadata (roastDate, profile, machine, netOutputKg)
   inputLotCodes String[] // denormalized helper for lot linking
   createdAt DateTime @default(now())
@@ -116,6 +118,7 @@ model Batch {
   organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@unique([orgId, code])
+  @@index([code])
   @@map("batches")
 }
 
@@ -148,9 +151,9 @@ model Certificate {
 
 model EpcisEventRecord {
   id        String   @id @default(cuid())
-  orgId     String   @index
+  orgId     String
   eventType String   // EPCIS event type
-  eventTime DateTime @index
+  eventTime DateTime
   readPoint String?  // SGLN URN
   bizLocation String? // SGLN URN
   hash      String   @unique // content address hash
@@ -161,6 +164,8 @@ model EpcisEventRecord {
   // Relations
   organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
+  @@index([orgId])
+  @@index([eventTime])
   @@map("epcis_events")
 }
 
@@ -190,7 +195,7 @@ model IdempotencyRecord {
 
 model ScanEvent {
   id        String   @id @default(cuid())
-  gtin      String   @index
+  gtin      String
   lot       String?
   serial    String?
   country   String?
@@ -199,6 +204,111 @@ model ScanEvent {
   resolverLatencyMs Int?
   scannedAt DateTime @default(now())
 
+  @@index([gtin])
   @@index([scannedAt])
   @@map("scan_events")
+}
+
+// ============================================================================
+// COFFEE DIGITAL PASSPORT MODELS
+// ============================================================================
+
+model Seller {
+  id                String   @id @default(cuid())
+  companyName       String
+  companySize       String?
+  mission           String?
+  logo              String?
+  phone             String?
+  email             String?
+  location          String?
+  country           String?
+  city              String?
+  rating            Float     @default(0)
+  totalCoffees       Int       @default(0)
+  memberSince       Int
+  specialties       String[]  @default([])
+  featuredCoffeeId  String?
+  description       String?
+  website           String?
+  instagram         String?
+  facebook          String?
+  twitter           String?
+  certifications    String[]  @default([])
+  uniqueSlug        String    @unique
+  subscriptionTier  String    @default("free")
+  subscriptionStatus String   @default("active")
+  defaultPricePerBag String?
+  orderLink         String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  coffees           Coffee[]
+
+  @@map("sellers")
+  @@index([uniqueSlug])
+}
+
+model Coffee {
+  id                    String   @id @default(cuid())
+  coffeeName            String
+  roastedBy             String?
+  sellerId              String?
+  subscriptionTier      String?
+  origin                String
+  region                String?
+  altitude              String?
+  process               String?
+  variety               String?
+  harvestYear           String?
+  roastLevel            String?
+  flavorNotes           String[]  @default([])
+  description           String?
+  price                 String?
+  currency              String?   @default("USD")
+  weight                String?
+  qrCode                String?
+  slug                  String?   @unique
+  farmPhotos            String[]  @default([])
+  roastingCurveImage    String?
+  coordinatesLat        Float?
+  coordinatesLng         Float?
+  certifications        String[]  @default([])
+  environmentalPractices String[] @default([])
+  farm                  String?
+  farmer                String?
+  cuppingScore          String?
+  notes                 String?
+  harvestDate           String?
+  processingDate        String?
+  producerName          String?
+  producerBio           String?
+  aroma                 String?
+  flavor                String?
+  acidity               String?
+  body                  String?
+  primaryNotes          String?
+  secondaryNotes        String?
+  finish                String?
+  fermentationTime      String?
+  dryingTime            String?
+  moistureContent       String?
+  screenSize            String?
+  beanDensity           String?
+  roastRecommendation   String?
+  fairTradePremium      String?
+  communityProjects     String?
+  womenWorkerPercentage String?
+  available             Boolean   @default(true)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  seller                Seller?   @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+
+  @@map("coffees")
+  @@index([sellerId])
+  @@index([slug])
+  @@index([origin])
 }
