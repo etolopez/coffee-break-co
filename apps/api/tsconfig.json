@@ -5,8 +5,13 @@
     "rootDir": "./src",
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["*"]
-    }
+      "@/*": ["*"],
+      "@coffee-passport/shared": ["../../packages/shared/src"],
+      "@coffee-passport/shared/*": ["../../packages/shared/src/*"]
+    },
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src/**/*", "prisma/**/*"],
   "exclude": ["node_modules", "dist", "test"]
