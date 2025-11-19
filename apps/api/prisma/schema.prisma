@@ -1,0 +1,204 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ORGANIZATION & RBAC
+// ============================================================================
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  region    String
+  hmacKey   String?  // per-tenant HMAC shared secret (MVP)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users       ActorUser[]
+  products    Product[]
+  facilities  Facility[]
+  lots        Lot[]
+  batches     Batch[]
+  certificates Certificate[]
+  events      EpcisEventRecord[]
+  idempotency IdempotencyRecord[]
+
+  @@map("organizations")
+}
+
+model ActorUser {
+  id   String @id @default(cuid())
+  email String @unique
+  role  String
+  orgId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@map("actor_users")
+}
+
+// ============================================================================
+// PRODUCT, FACILITY, LOT, BATCH
+// ============================================================================
+
+model Product {
+  id      String @id @default(cuid())
+  orgId   String
+  gtin    String @index
+  name    String
+  brand   String
+  images  Json   // Array of image URLs
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, gtin])
+  @@map("products")
+}
+
+model Facility {
+  id      String   @id @default(cuid())
+  orgId   String
+  gln     String?  // Global Location Number
+  name    String
+  address String?
+  lat     Float?   // Latitude
+  lon     Float?   // Longitude
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, gln])
+  @@map("facilities")
+}
+
+model Lot {
+  id        String   @id @default(cuid())
+  orgId     String
+  code      String   @index
+  metadata  Json     // Lot metadata (harvestYear, origin, varietals, process, altitudeMasl)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, code])
+  @@map("lots")
+}
+
+model Batch {
+  id        String   @id @default(cuid())
+  orgId     String
+  code      String   @index
+  metadata  Json     // Batch metadata (roastDate, profile, machine, netOutputKg)
+  inputLotCodes String[] // denormalized helper for lot linking
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, code])
+  @@map("batches")
+}
+
+// ============================================================================
+// CERTIFICATES
+// ============================================================================
+
+model Certificate {
+  id        String    @id @default(cuid())
+  orgId     String
+  type      String    // Certificate type (e.g., "Organic", "Fair Trade")
+  issuer    String    // Issuing organization
+  validFrom DateTime?
+  validTo   DateTime?
+  url       String?   // External URL to certificate
+  vcJwt     String?   // W3C Verifiable Credential JWT
+  fileKey   String?   // S3 object key for stored file
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@map("certificates")
+}
+
+// ============================================================================
+// EPCIS EVENTS
+// ============================================================================
+
+model EpcisEventRecord {
+  id        String   @id @default(cuid())
+  orgId     String   @index
+  eventType String   // EPCIS event type
+  eventTime DateTime @index
+  readPoint String?  // SGLN URN
+  bizLocation String? // SGLN URN
+  hash      String   @unique // content address hash
+  signature String?  // HMAC/Detached JWS
+  doc       Json     // raw EPCIS JSON-LD
+  createdAt DateTime @default(now())
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@map("epcis_events")
+}
+
+// ============================================================================
+// IDEMPOTENCY
+// ============================================================================
+
+model IdempotencyRecord {
+  id        String   @id @default(cuid())
+  orgId     String
+  key       String   // Idempotency key from header
+  response  Json     // Cached response
+  expiresAt DateTime // TTL for cleanup
+  createdAt DateTime @default(now())
+
+  // Relations
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, key])
+  @@index([expiresAt]) // For cleanup jobs
+  @@map("idempotency_records")
+}
+
+// ============================================================================
+// SCAN TELEMETRY (for analytics)
+// ============================================================================
+
+model ScanEvent {
+  id        String   @id @default(cuid())
+  gtin      String   @index
+  lot       String?
+  serial    String?
+  country   String?
+  city      String?
+  userAgent String?
+  resolverLatencyMs Int?
+  scannedAt DateTime @default(now())
+
+  @@index([scannedAt])
+  @@map("scan_events")
+}

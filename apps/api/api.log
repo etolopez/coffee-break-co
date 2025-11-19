@@ -1,0 +1,18 @@
+
+> @coffee-passport/api@1.0.0 dev
+> tsx src/main.ts
+
+[32m[Nest] 78806  - [39m08/17/2025, 9:51:47 PM [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 78806  - [39m08/17/2025, 9:51:47 PM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 78806  - [39m08/17/2025, 9:51:47 PM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mCaptureModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 78806  - [39m08/17/2025, 9:51:47 PM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigHostModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 78806  - [39m08/17/2025, 9:51:47 PM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 78806  - [39m08/17/2025, 9:51:47 PM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAppController {/}:[39m[38;5;3m +204ms[39m
+[32m[Nest] 78806  - [39m08/17/2025, 9:51:47 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 78806  - [39m08/17/2025, 9:51:47 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/health, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 78806  - [39m08/17/2025, 9:51:47 PM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mCaptureController {/api/epcis}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 78806  - [39m08/17/2025, 9:51:47 PM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/epcis/capture, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 78806  - [39m08/17/2025, 9:51:47 PM [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +0ms[39m
+Coffee Digital Passport API running on port 4000 in development mode
+Received SIGTERM, shutting down gracefully
+Application closed successfully

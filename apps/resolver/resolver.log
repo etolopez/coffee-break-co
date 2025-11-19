@@ -1,0 +1,5 @@
+
+> @coffee-passport/resolver@1.0.0 dev
+> wrangler dev
+
+sh: wrangler: command not found

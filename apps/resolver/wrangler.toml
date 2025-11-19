@@ -1,0 +1,28 @@
+name = "coffee-passport-resolver"
+main = "src/index.ts"
+compatibility_date = "2024-01-15"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+name = "coffee-passport-resolver-prod"
+vars = { ENVIRONMENT = "production" }
+
+[env.staging]
+name = "coffee-passport-resolver-staging"
+vars = { ENVIRONMENT = "staging" }
+
+# Environment variables that will be bound at runtime
+[vars]
+WORKER_PUBLIC_API = "https://api.example.com"
+WORKER_WEB_ORIGIN = "https://www.example.com"
+
+# KV namespaces (if needed for caching)
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "your-kv-namespace-id"
+# preview_id = "your-preview-kv-namespace-id"
+
+# Routes (configure these based on your domain setup)
+# [[routes]]
+# pattern = "id.example.com/*"
+# zone_name = "example.com"

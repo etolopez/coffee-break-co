@@ -1,0 +1,43 @@
+{
+  "name": "coffee-passport",
+  "version": "1.0.0",
+  "description": "Coffee Digital Passport - Standards-first traceability platform",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "db:migrate": "cd apps/api && npm run prisma:migrate",
+    "db:seed": "cd apps/api && npm run db:seed",
+    "worker:dev": "cd apps/resolver && npm run dev",
+    "worker:deploy": "cd apps/resolver && npm run deploy"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.133",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.10.5",
+    "eslint": "^8.56.0",
+    "tsx": "^4.7.0",
+    "turbo": "^1.12.4",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@types/winston": "^2.4.4",
+    "dotenv": "^16.3.1",
+    "pino": "^8.17.2",
+    "pino-pretty": "^10.3.1",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.8.1",
+    "typescript": "^5.3.3",
+    "uuid": "^9.0.1",
+    "winston": "^3.17.0",
+    "zod": "^3.22.4"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

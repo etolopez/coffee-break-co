@@ -1,0 +1,173 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: coffee-passport-postgres
+    environment:
+      POSTGRES_DB: coffee_passport
+      POSTGRES_USER: coffee_user
+      POSTGRES_PASSWORD: coffee_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - coffee-passport-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coffee_user -d coffee_passport"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and queues
+  redis:
+    image: redis:7-alpine
+    container_name: coffee-passport-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - coffee-passport-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # OpenSearch for text search
+  opensearch:
+    image: opensearchproject/opensearch:2.11.0
+    container_name: coffee-passport-opensearch
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - plugins.security.disabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    networks:
+      - coffee-passport-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ClickHouse for analytics
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.8-alpine
+    container_name: coffee-passport-clickhouse
+    environment:
+      CLICKHOUSE_DB: coffee_passport
+      CLICKHOUSE_USER: coffee_user
+      CLICKHOUSE_PASSWORD: coffee_password
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./clickhouse-init:/docker-entrypoint-initdb.d
+    networks:
+      - coffee-passport-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # MinIO for S3-compatible storage
+  minio:
+    image: minio/minio:latest
+    container_name: coffee-passport-minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - coffee-passport-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis Commander for Redis management UI
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: coffee-passport-redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - coffee-passport-network
+
+  # pgAdmin for PostgreSQL management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: coffee-passport-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@coffee-passport.local
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8082:80"
+    depends_on:
+      - postgres
+    networks:
+      - coffee-passport-network
+
+  # OpenSearch Dashboards
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.11.0
+    container_name: coffee-passport-dashboards
+    environment:
+      - 'OPENSEARCH_HOSTS=["http://opensearch:9200"]'
+      - 'DISABLE_SECURITY_DASHBOARDS_PLUGIN=true'
+    ports:
+      - "5601:5601"
+    depends_on:
+      - opensearch
+    networks:
+      - coffee-passport-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  opensearch_data:
+    driver: local
+  clickhouse_data:
+    driver: local
+  minio_data:
+    driver: local
+
+networks:
+  coffee-passport-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
