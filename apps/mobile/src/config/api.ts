@@ -21,11 +21,7 @@ const getApiBaseUrl = (): string => {
   const envUrl = process.env.EXPO_PUBLIC_API_URL;
   if (envUrl) return envUrl;
   
-  // Priority 2: Config from app.json
-  const configUrl = Constants.expoConfig?.extra?.apiUrl;
-  if (configUrl) return configUrl;
-  
-  // Priority 3: Development defaults based on platform
+  // Priority 2: In development, always use localhost (ignore app.json Railway URL)
   // NOTE: Using NestJS backend on port 4000 (standalone API server)
   if (__DEV__) {
     // Android emulator needs special IP to access host machine
@@ -40,8 +36,11 @@ const getApiBaseUrl = (): string => {
     return 'http://localhost:4000';
   }
   
-  // Production fallback - should be set via environment variable
-  // This will only be used if EXPO_PUBLIC_API_URL is not set
+  // Priority 3: Production - use Railway URL from app.json
+  const configUrl = Constants.expoConfig?.extra?.apiUrl;
+  if (configUrl) return configUrl;
+  
+  // Fallback - should not happen in production
   return 'http://localhost:4000';
 };
 
