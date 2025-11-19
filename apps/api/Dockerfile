@@ -32,7 +32,7 @@ COPY apps/api/package-lock.json ./
 COPY apps/api/tsconfig.json ./
 
 # Install API dependencies
-RUN npm ci
+RUN npm install
 
 # Copy API source code
 COPY apps/api/src ./src
