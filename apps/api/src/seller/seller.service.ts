@@ -102,7 +102,7 @@ export class SellerService {
         ? seller.logo
         : undefined;
 
-    return {
+    const baseResponse = {
       id: seller.id,
       name: seller.companyName || 'Unknown Seller',
       location: displayLocation,
@@ -114,10 +114,8 @@ export class SellerService {
       coffeeCount,
       memberSince: seller.memberSince,
       image: sellerLogo || '',
-      sellerPhoto: sellerLogo,
       specialties: seller.specialties,
       brandColor: this.getBrandColor(seller.id),
-      logo: sellerLogo,
       coffees: sellerCoffees.map((coffee) => ({
         id: coffee.id,
         name: coffee.coffeeName,
@@ -126,6 +124,15 @@ export class SellerService {
         available: coffee.available,
       })),
     };
+
+    // Add optional fields only if they have values
+    const optionalFields: Partial<Seller> = {};
+    if (sellerLogo) {
+      optionalFields.sellerPhoto = sellerLogo;
+      optionalFields.logo = sellerLogo;
+    }
+
+    return { ...baseResponse, ...optionalFields } as Seller;
   }
 
   /**
