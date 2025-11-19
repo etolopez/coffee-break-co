@@ -40,8 +40,8 @@ export interface Seller {
 @Injectable()
 export class SellerService {
   private readonly logger = new Logger(SellerService.name);
-  private readonly sellersFile = process.env.DATA_DIR
-    ? path.join(process.env.DATA_DIR, 'sellers-persistent.json')
+  private readonly sellersFile = process.env['DATA_DIR']
+    ? path.join(process.env['DATA_DIR'], 'sellers-persistent.json')
     : path.join(process.cwd(), '..', '..', 'data', 'sellers-persistent.json');
 
   constructor(private readonly coffeeService: CoffeeService) {}

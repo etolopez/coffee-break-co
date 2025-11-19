@@ -66,8 +66,8 @@ export interface CoffeeEntry {
 @Injectable()
 export class CoffeeService {
   private readonly logger = new Logger(CoffeeService.name);
-  private readonly coffeeEntriesFile = process.env.DATA_DIR
-    ? path.join(process.env.DATA_DIR, 'coffee-entries-persistent.json')
+  private readonly coffeeEntriesFile = process.env['DATA_DIR']
+    ? path.join(process.env['DATA_DIR'], 'coffee-entries-persistent.json')
     : path.join(process.cwd(), '..', '..', 'data', 'coffee-entries-persistent.json');
 
   /**

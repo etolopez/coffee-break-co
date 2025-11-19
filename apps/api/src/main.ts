@@ -27,7 +27,7 @@ async function bootstrap() {
     // Get configuration service
     const configService = app.get(ConfigService);
     // Use PORT from environment (Railway provides this) or default to 4000
-    const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000;
+    const port = process.env['PORT'] ? parseInt(process.env['PORT'], 10) : 4000;
     const environment = configService.get<string>('NODE_ENV', 'development');
 
     // Enable CORS - Allow all origins for mobile app development
