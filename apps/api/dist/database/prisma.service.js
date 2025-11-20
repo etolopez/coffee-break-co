@@ -10,6 +10,7 @@ exports.PrismaService = void 0;
 const tslib_1 = require("tslib");
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
+const ensure_users_table_1 = require("./ensure-users-table");
 /**
  * Prisma Service
  * Extends PrismaClient and implements lifecycle hooks
@@ -44,6 +45,11 @@ let PrismaService = PrismaService_1 = class PrismaService extends client_1.Prism
             }
             await this.$connect();
             this.logger.log('✅ Successfully connected to PostgreSQL database');
+            // Emergency: Ensure users table exists (in case migrations didn't run)
+            const usersTableExists = await (0, ensure_users_table_1.ensureUsersTable)(this);
+            if (!usersTableExists) {
+                this.logger.warn('⚠️  Could not ensure users table exists - authentication may not work');
+            }
         }
         catch (error) {
             const nodeEnv = process.env['NODE_ENV'] || 'development';

@@ -18,10 +18,10 @@ export declare class AdminController {
             count: number;
         }[];
         recentUsers: {
-            id: string;
             email: string;
             name: string | null;
             role: string;
+            id: string;
             createdAt: Date;
         }[];
         recentCoffees: {
@@ -32,58 +32,60 @@ export declare class AdminController {
         }[];
     }>;
     getAllUsers(): Promise<({
-        _count: {
-            favorites: number;
-        };
         profile: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            bio: string | null;
             location: string | null;
             website: string | null;
-            userId: string;
-            bio: string | null;
             preferences: import("@prisma/client/runtime/library").JsonValue | null;
+            userId: string;
         } | null;
         sellers: {
             id: string;
             companyName: string;
             uniqueSlug: string;
         }[];
+        _count: {
+            favorites: number;
+        };
     } & {
-        id: string;
         email: string;
         password: string;
         name: string | null;
         role: string;
+        id: string;
         avatar: string | null;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
     })[]>;
     getAllSellers(): Promise<({
+        user: {
+            email: string;
+            name: string | null;
+            id: string;
+        } | null;
         _count: {
             coffees: number;
         };
-        user: {
-            id: string;
-            email: string;
-            name: string | null;
-        } | null;
     } & {
-        id: string;
         email: string | null;
+        id: string;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
-        subscriptionTier: string;
+        location: string | null;
+        website: string | null;
+        userId: string | null;
         description: string | null;
+        subscriptionTier: string;
         certifications: string[];
         companyName: string;
         companySize: string | null;
         mission: string | null;
         logo: string | null;
-        location: string | null;
         country: string | null;
         city: string | null;
         rating: number;
@@ -91,7 +93,6 @@ export declare class AdminController {
         memberSince: number;
         specialties: string[];
         featuredCoffeeId: string | null;
-        website: string | null;
         instagram: string | null;
         facebook: string | null;
         twitter: string | null;
@@ -99,21 +100,21 @@ export declare class AdminController {
         subscriptionStatus: string;
         defaultPricePerBag: string | null;
         orderLink: string | null;
-        userId: string | null;
     })[]>;
     getAllCoffees(): Promise<({
-        _count: {
-            favorites: number;
-        };
         seller: {
             id: string;
             companyName: string;
             uniqueSlug: string;
         } | null;
+        _count: {
+            favorites: number;
+        };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        description: string | null;
         coffeeName: string;
         roastedBy: string | null;
         sellerId: string | null;
@@ -126,7 +127,6 @@ export declare class AdminController {
         harvestYear: string | null;
         roastLevel: string | null;
         flavorNotes: string[];
-        description: string | null;
         price: string | null;
         currency: string | null;
         weight: string | null;

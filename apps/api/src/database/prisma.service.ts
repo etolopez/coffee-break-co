@@ -6,6 +6,7 @@
 
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { ensureUsersTable } from './ensure-users-table';
 
 /**
  * Prisma Service
@@ -44,6 +45,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
       await this.$connect();
       this.logger.log('✅ Successfully connected to PostgreSQL database');
+      
+      // Emergency: Ensure users table exists (in case migrations didn't run)
+      const usersTableExists = await ensureUsersTable(this);
+      if (!usersTableExists) {
+        this.logger.warn('⚠️  Could not ensure users table exists - authentication may not work');
+      }
     } catch (error: any) {
       const nodeEnv = process.env['NODE_ENV'] || 'development';
       
