@@ -140,40 +140,9 @@ export class SellerService {
    */
   async getAllSellers(): Promise<Seller[]> {
     try {
-      // Fetch sellers without including userId to avoid migration issues
+      // Fetch sellers - include userId if migration has been applied
       const sellers = await this.prisma.seller.findMany({
         orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          companyName: true,
-          companySize: true,
-          mission: true,
-          logo: true,
-          phone: true,
-          email: true,
-          location: true,
-          country: true,
-          city: true,
-          rating: true,
-          totalCoffees: true,
-          memberSince: true,
-          specialties: true,
-          featuredCoffeeId: true,
-          description: true,
-          website: true,
-          instagram: true,
-          facebook: true,
-          twitter: true,
-          certifications: true,
-          uniqueSlug: true,
-          subscriptionTier: true,
-          subscriptionStatus: true,
-          defaultPricePerBag: true,
-          orderLink: true,
-          createdAt: true,
-          updatedAt: true,
-          // Explicitly exclude userId if it doesn't exist yet
-        },
       });
 
       return Promise.all(sellers.map(seller => this.mapSellerToResponse(seller)));
