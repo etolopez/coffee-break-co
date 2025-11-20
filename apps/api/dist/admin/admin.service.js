@@ -55,6 +55,7 @@ let AdminService = AdminService_1 = class AdminService {
                     createdAt: true,
                 },
             });
+            // Serialize dates to strings for JSON response
             return {
                 stats: {
                     totalUsers: users,
@@ -66,8 +67,14 @@ let AdminService = AdminService_1 = class AdminService {
                     role: item.role,
                     count: item._count || 0, // _count is a number in groupBy
                 })),
-                recentUsers,
-                recentCoffees,
+                recentUsers: recentUsers.map((user) => ({
+                    ...user,
+                    createdAt: user.createdAt.toISOString(),
+                })),
+                recentCoffees: recentCoffees.map((coffee) => ({
+                    ...coffee,
+                    createdAt: coffee.createdAt.toISOString(),
+                })),
             };
         }
         catch (error) {

@@ -288,6 +288,56 @@ export const adminService = {
 };
 
 /**
+ * Favorites API Service
+ * Handles all favorites-related API calls
+ */
+export const favoritesService = {
+  /**
+   * Check if a coffee is favorited by the current user
+   */
+  async isFavorited(coffeeId: string): Promise<boolean> {
+    try {
+      const url = buildApiUrl(`/api/users/favorites/${coffeeId}/check`);
+      const response = await apiClient.get<{ isFavorited: boolean }>(url);
+      return response.data.isFavorited;
+    } catch (error) {
+      logger.error(`Error checking favorite status for coffee ${coffeeId}`, error);
+      return false; // Default to false if check fails
+    }
+  },
+
+  /**
+   * Add coffee to favorites
+   */
+  async addFavorite(coffeeId: string): Promise<void> {
+    try {
+      const url = buildApiUrl(`/api/users/favorites/${coffeeId}`);
+      await apiClient.post(url);
+      logger.info(`Coffee ${coffeeId} added to favorites`);
+    } catch (error) {
+      logger.error(`Error adding coffee ${coffeeId} to favorites`, error);
+      logApiError(`/api/users/favorites/${coffeeId}`, 'POST', error as AxiosError);
+      throw new Error(handleApiError(error as AxiosError));
+    }
+  },
+
+  /**
+   * Remove coffee from favorites
+   */
+  async removeFavorite(coffeeId: string): Promise<void> {
+    try {
+      const url = buildApiUrl(`/api/users/favorites/${coffeeId}`);
+      await apiClient.delete(url);
+      logger.info(`Coffee ${coffeeId} removed from favorites`);
+    } catch (error) {
+      logger.error(`Error removing coffee ${coffeeId} from favorites`, error);
+      logApiError(`/api/users/favorites/${coffeeId}`, 'DELETE', error as AxiosError);
+      throw new Error(handleApiError(error as AxiosError));
+    }
+  },
+};
+
+/**
  * Health check service
  */
 export const healthService = {

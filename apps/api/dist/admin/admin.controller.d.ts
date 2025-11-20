@@ -18,15 +18,15 @@ export declare class AdminController {
             count: number;
         }[];
         recentUsers: {
+            createdAt: string;
             id: string;
             email: string;
             name: string | null;
             role: string;
-            createdAt: Date;
         }[];
         recentCoffees: {
+            createdAt: string;
             id: string;
-            createdAt: Date;
             coffeeName: string;
             origin: string;
         }[];

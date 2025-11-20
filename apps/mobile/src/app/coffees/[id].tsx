@@ -14,11 +14,13 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, typography, spacing, borderRadius } from '../../config/theme';
+import { colors, typography, spacing, borderRadius, shadows } from '../../config/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { coffeeService } from '../../services/api';
+import { coffeeService, favoritesService } from '../../services/api';
 import { CoffeeEntry } from '../../types';
 import { logger } from '../../utils/logger';
+import { useAuth } from '../../contexts/AuthContext';
+import { TouchableOpacity } from 'react-native';
 
 export default function CoffeeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -27,6 +29,9 @@ export default function CoffeeDetailScreen() {
   
   const [coffee, setCoffee] = useState<CoffeeEntry | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const fetchCoffee = async () => {
@@ -97,10 +102,22 @@ export default function CoffeeDetailScreen() {
       }
     };
 
+    const checkFavorite = async () => {
+      if (id && isAuthenticated) {
+        try {
+          const favorited = await favoritesService.isFavorited(id);
+          setIsFavorited(favorited);
+        } catch (error) {
+          logger.error('Error checking favorite status', error);
+        }
+      }
+    };
+
     if (id) {
       fetchCoffee();
+      checkFavorite();
     }
-  }, [id]);
+  }, [id, isAuthenticated]);
 
   if (loading) {
     return (
@@ -120,13 +137,53 @@ export default function CoffeeDetailScreen() {
     );
   }
 
+  /**
+   * Toggle favorite status
+   */
+  const toggleFavorite = async () => {
+    if (!isAuthenticated || !coffee) return;
+
+    setFavoriteLoading(true);
+    try {
+      if (isFavorited) {
+        await favoritesService.removeFavorite(coffee.id);
+        setIsFavorited(false);
+        logger.info('Coffee removed from favorites');
+      } else {
+        await favoritesService.addFavorite(coffee.id);
+        setIsFavorited(true);
+        logger.info('Coffee added to favorites');
+      }
+    } catch (error) {
+      logger.error('Error toggling favorite', error);
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
+
   return (
     <ScrollView style={[styles.container, { paddingTop: insets.top }]}>
       <LinearGradient
         colors={[colors.primary[50], colors.secondary[50]]}
         style={styles.header}
       >
-        <Text style={styles.coffeeName}>{coffee.coffeeName}</Text>
+        <View style={styles.headerTop}>
+          <Text style={styles.coffeeName}>{coffee.coffeeName}</Text>
+          {isAuthenticated && (
+            <TouchableOpacity
+              style={styles.favoriteButton}
+              onPress={toggleFavorite}
+              disabled={favoriteLoading}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={isFavorited ? 'heart' : 'heart-outline'}
+                size={28}
+                color={isFavorited ? colors.status.error : colors.neutral.gray600}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
         <View style={styles.locationRow}>
           <Ionicons name="location" size={16} color={colors.primary[600]} />
           <Text style={styles.origin}>{coffee.origin}</Text>
@@ -230,11 +287,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xl,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.sm,
+  },
   coffeeName: {
+    flex: 1,
     fontSize: typography.fontSize['4xl'],
     fontWeight: typography.fontWeight.bold,
     color: colors.neutral.gray900,
-    marginBottom: spacing.sm,
+    marginRight: spacing.md,
+  },
+  favoriteButton: {
+    padding: spacing.sm,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.neutral.white,
+    ...shadows.sm,
   },
   locationRow: {
     flexDirection: 'row',

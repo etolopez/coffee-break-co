@@ -56,6 +56,7 @@ export class AdminService {
         },
       });
 
+      // Serialize dates to strings for JSON response
       return {
         stats: {
           totalUsers: users,
@@ -67,8 +68,14 @@ export class AdminService {
           role: item.role,
           count: item._count || 0, // _count is a number in groupBy
         })),
-        recentUsers,
-        recentCoffees,
+        recentUsers: recentUsers.map((user) => ({
+          ...user,
+          createdAt: user.createdAt.toISOString(),
+        })),
+        recentCoffees: recentCoffees.map((coffee) => ({
+          ...coffee,
+          createdAt: coffee.createdAt.toISOString(),
+        })),
       };
     } catch (error: any) {
       this.logger.error('Error getting dashboard stats', {
