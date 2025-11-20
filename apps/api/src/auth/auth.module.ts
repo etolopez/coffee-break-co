@@ -19,12 +19,15 @@ import { DatabaseModule } from '../database/database.module';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'your-secret-key-change-in-production',
-        signOptions: {
-          expiresIn: '7d', // Token expires in 7 days
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET') || 'your-secret-key-change-in-production';
+        return {
+          secret,
+          signOptions: {
+            expiresIn: '7d', // Token expires in 7 days
+          },
+        };
+      },
       inject: [ConfigService],
     }),
   ],
