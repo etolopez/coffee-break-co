@@ -13,6 +13,7 @@ import { CoffeeService } from './coffee.service';
 export class CoffeeController {
   constructor(private readonly coffeeService: CoffeeService) {}
 
+  @Public() // Make coffee listings public
   @Get()
   @ApiOperation({
     summary: 'Get all coffee entries',

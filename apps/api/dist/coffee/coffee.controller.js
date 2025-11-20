@@ -36,6 +36,8 @@ let CoffeeController = class CoffeeController {
 };
 exports.CoffeeController = CoffeeController;
 tslib_1.__decorate([
+    (0, public_decorator_1.Public)() // Make coffee listings public
+    ,
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({
         summary: 'Get all coffee entries',
