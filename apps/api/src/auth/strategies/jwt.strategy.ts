@@ -3,22 +3,25 @@
  * Validates JWT tokens for protected routes
  */
 
-import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
-    @Inject(ConfigService) private readonly configService: ConfigService,
+    private readonly configService: ConfigService,
     private readonly authService: AuthService,
   ) {
+    // Get JWT secret from ConfigService or use default
+    const jwtSecret = configService?.get<string>('JWT_SECRET') || process.env['JWT_SECRET'] || 'your-secret-key-change-in-production';
+    
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'your-secret-key-change-in-production',
+      secretOrKey: jwtSecret,
     });
   }
 
