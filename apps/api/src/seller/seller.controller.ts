@@ -5,6 +5,7 @@
 
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Public } from '../auth/decorators/public.decorator';
 import { SellerService } from './seller.service';
 
 @ApiTags('seller')
@@ -31,6 +32,7 @@ export class SellerController {
   }
 
   @Get(':id')
+  @Public()
   @ApiOperation({
     summary: 'Get seller by ID',
     description: 'Retrieve a specific seller by their ID',
