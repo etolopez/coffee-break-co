@@ -46,13 +46,21 @@ let PrismaService = PrismaService_1 = class PrismaService extends client_1.Prism
             await this.$connect();
             this.logger.log('✅ Successfully connected to PostgreSQL database');
             // Emergency: Ensure users table exists (in case migrations didn't run)
+            this.logger.log('🔍 Checking if users table exists...');
             const usersTableExists = await (0, ensure_users_table_1.ensureUsersTable)(this);
             if (!usersTableExists) {
                 this.logger.warn('⚠️  Could not ensure users table exists - authentication may not work');
             }
             else {
                 // If table exists, also ensure demo users exist (in case seeding didn't run)
-                await (0, ensure_users_table_1.ensureDemoUsers)(this);
+                this.logger.log('🔍 Ensuring demo users exist...');
+                try {
+                    await (0, ensure_users_table_1.ensureDemoUsers)(this);
+                }
+                catch (error) {
+                    this.logger.error('❌ Failed to ensure demo users:', error.message);
+                    this.logger.error('Error details:', error);
+                }
             }
         }
         catch (error) {

@@ -46,6 +46,8 @@ export class AuthService {
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
     const { email, password, name, role = 'customer' } = registerDto;
 
+    this.logger.log(`Attempting to register user: ${email} (${role})`);
+
     try {
       // Check if user already exists
       const existingUser = await this.prisma.user.findUnique({
@@ -53,13 +55,16 @@ export class AuthService {
       });
 
       if (existingUser) {
+        this.logger.warn(`Registration failed: User ${email} already exists`);
         throw new ConflictException('User with this email already exists');
       }
 
       // Hash password
+      this.logger.debug(`Hashing password for ${email}`);
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Create user
+      this.logger.debug(`Creating user in database: ${email}`);
       const user = await this.prisma.user.create({
         data: {
           email: email.toLowerCase(),
@@ -79,6 +84,8 @@ export class AuthService {
         },
       });
 
+      this.logger.log(`✅ User created successfully: ${user.id} - ${user.email}`);
+
       // Generate JWT token
       const token = this.generateToken(user.id, user.email, user.role);
 
@@ -95,6 +102,13 @@ export class AuthService {
         token,
       };
     } catch (error: any) {
+      // Log the full error for debugging
+      this.logger.error(`❌ Registration failed for ${email}:`, {
+        message: error.message,
+        code: error.code,
+        meta: error.meta,
+        stack: error.stack,
+      });
       // Check for various Prisma database connection errors
       const prismaErrorCodes = ['P1001', 'P1002', 'P1003', 'P1008', 'P1010', 'P1011', 'P1017'];
       const isDatabaseError = 
