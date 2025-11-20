@@ -131,24 +131,39 @@ let AuthService = AuthService_1 = class AuthService {
             };
         }
         catch (error) {
+            // Log the full error details for debugging
+            this.logger.error('Login error details', {
+                code: error.code,
+                message: error.message,
+                meta: error.meta,
+                stack: error.stack,
+                name: error.name,
+            });
             // Check for various Prisma database connection errors
-            const prismaErrorCodes = ['P1001', 'P1002', 'P1003', 'P1008', 'P1010', 'P1011', 'P1017'];
+            const prismaErrorCodes = ['P1001', 'P1002', 'P1003', 'P1008', 'P1010', 'P1011', 'P1017', 'P2001', 'P2002', 'P2003'];
             const isDatabaseError = prismaErrorCodes.includes(error.code) ||
                 error.message?.includes('database') ||
                 error.message?.includes('connection') ||
                 error.message?.includes('timeout') ||
                 error.message?.includes('ECONNREFUSED') ||
-                error.message?.includes('relation "users" does not exist'); // Table doesn't exist (migration not run)
+                error.message?.includes('relation "users" does not exist') ||
+                error.message?.includes('does not exist') ||
+                error.code?.startsWith('P'); // Any Prisma error code
             if (isDatabaseError) {
                 this.logger.error('Database connection error during login', {
                     code: error.code,
                     message: error.message,
+                    meta: error.meta,
                 });
                 // Provide more specific error message
-                if (error.message?.includes('relation "users" does not exist')) {
-                    throw new common_1.UnauthorizedException('Database migration not applied. Please check Railway logs and ensure migrations have run.');
+                if (error.message?.includes('relation "users" does not exist') || error.message?.includes('does not exist')) {
+                    throw new common_1.UnauthorizedException('Database migration not applied. The users table does not exist. Please check Railway logs and ensure migrations have run.');
                 }
                 throw new common_1.UnauthorizedException('Database is not available. Please check your database connection.');
+            }
+            // If it's already a NestJS exception, rethrow it
+            if (error instanceof common_1.UnauthorizedException) {
+                throw error;
             }
             throw error;
         }
