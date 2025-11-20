@@ -222,17 +222,17 @@ export const sellerService = {
   /**
    * Fetch seller's coffees
    */
-  async getSellerCoffees(sellerId: string): Promise<CoffeeEntry[]> {
-    try {
-      const url = buildApiUrl(API_ENDPOINTS.SELLER_COFFEES(sellerId));
-      const response = await apiClient.get<CoffeeEntry[]>(url);
-      return response.data;
-    } catch (error) {
-      logger.error(`Error fetching seller coffees for ${sellerId}`, error);
-      logApiError(API_ENDPOINTS.SELLER_COFFEES(sellerId), 'GET', error as AxiosError);
-      throw new Error(handleApiError(error as AxiosError));
-    }
-  },
+    async getSellerCoffees(sellerId: string): Promise<CoffeeEntry[]> {
+      try {
+        const url = buildApiUrl(API_ENDPOINTS.SELLER_COFFEES_BY_SELLER_ID(sellerId));
+        const response = await apiClient.get<CoffeeEntry[]>(url);
+        return response.data;
+      } catch (error) {
+        logger.error(`Error fetching seller coffees for ${sellerId}`, error);
+        logApiError(API_ENDPOINTS.SELLER_COFFEES_BY_SELLER_ID(sellerId), 'GET', error as AxiosError);
+        throw new Error(handleApiError(error as AxiosError));
+      }
+    },
 };
 
 /**
