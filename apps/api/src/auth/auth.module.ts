@@ -12,6 +12,9 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { DatabaseModule } from '../database/database.module';
 
+// Get JWT secret from environment or use default
+const JWT_SECRET = process.env['JWT_SECRET'] || 'your-secret-key-change-in-production';
+
 @Module({
   imports: [
     DatabaseModule,
@@ -20,7 +23,7 @@ import { DatabaseModule } from '../database/database.module';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
-        const secret = configService.get<string>('JWT_SECRET') || 'your-secret-key-change-in-production';
+        const secret = configService.get<string>('JWT_SECRET') || JWT_SECRET;
         return {
           secret,
           signOptions: {
@@ -32,7 +35,16 @@ import { DatabaseModule } from '../database/database.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [
+    AuthService,
+    {
+      provide: JwtStrategy,
+      useFactory: (authService: AuthService) => {
+        return new JwtStrategy(JWT_SECRET, authService);
+      },
+      inject: [AuthService],
+    },
+  ],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

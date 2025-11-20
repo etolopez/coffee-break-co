@@ -14,6 +14,8 @@ const auth_service_1 = require("./auth.service");
 const auth_controller_1 = require("./auth.controller");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
 const database_module_1 = require("../database/database.module");
+// Get JWT secret from environment or use default
+const JWT_SECRET = process.env['JWT_SECRET'] || 'your-secret-key-change-in-production';
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -26,7 +28,7 @@ exports.AuthModule = AuthModule = tslib_1.__decorate([
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
                 useFactory: (configService) => {
-                    const secret = configService.get('JWT_SECRET') || 'your-secret-key-change-in-production';
+                    const secret = configService.get('JWT_SECRET') || JWT_SECRET;
                     return {
                         secret,
                         signOptions: {
@@ -38,7 +40,16 @@ exports.AuthModule = AuthModule = tslib_1.__decorate([
             }),
         ],
         controllers: [auth_controller_1.AuthController],
-        providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy],
+        providers: [
+            auth_service_1.AuthService,
+            {
+                provide: jwt_strategy_1.JwtStrategy,
+                useFactory: (authService) => {
+                    return new jwt_strategy_1.JwtStrategy(JWT_SECRET, authService);
+                },
+                inject: [auth_service_1.AuthService],
+            },
+        ],
         exports: [auth_service_1.AuthService, jwt_1.JwtModule],
     })
 ], AuthModule);

@@ -6,26 +6,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
-    configService: ConfigService,
+    jwtSecret: string,
     private readonly authService: AuthService,
   ) {
-    // Get JWT secret - try ConfigService first, then env var, then default
-    let jwtSecret = 'your-secret-key-change-in-production';
-    try {
-      if (configService) {
-        jwtSecret = configService.get<string>('JWT_SECRET') || jwtSecret;
-      }
-    } catch (e) {
-      // Fallback to environment variable
-      jwtSecret = process.env['JWT_SECRET'] || jwtSecret;
-    }
-    
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
