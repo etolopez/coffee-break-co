@@ -140,13 +140,57 @@ export class SellerService {
    */
   async getAllSellers(): Promise<Seller[]> {
     try {
+      // Fetch sellers without including userId to avoid migration issues
       const sellers = await this.prisma.seller.findMany({
         orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          companyName: true,
+          companySize: true,
+          mission: true,
+          logo: true,
+          phone: true,
+          email: true,
+          location: true,
+          country: true,
+          city: true,
+          rating: true,
+          totalCoffees: true,
+          memberSince: true,
+          specialties: true,
+          featuredCoffeeId: true,
+          description: true,
+          website: true,
+          instagram: true,
+          facebook: true,
+          twitter: true,
+          certifications: true,
+          uniqueSlug: true,
+          subscriptionTier: true,
+          subscriptionStatus: true,
+          defaultPricePerBag: true,
+          orderLink: true,
+          createdAt: true,
+          updatedAt: true,
+          // Explicitly exclude userId if it doesn't exist yet
+        },
       });
 
       return Promise.all(sellers.map(seller => this.mapSellerToResponse(seller)));
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Error fetching sellers from database', error);
+      this.logger.error('Error details:', {
+        message: error?.message,
+        code: error?.code,
+        meta: error?.meta,
+      });
+      
+      // If it's a Prisma error about missing column, provide helpful message
+      if (error?.code === 'P2021' || error?.message?.includes('does not exist')) {
+        this.logger.error('Database schema mismatch - migration may not have been applied');
+        this.logger.error('Please check Railway logs for migration status');
+      }
+      
       throw error;
     }
   }
