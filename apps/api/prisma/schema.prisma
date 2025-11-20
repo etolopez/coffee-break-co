@@ -293,10 +293,9 @@ model Seller {
   twitter           String?
   certifications    String[]  @default([])
   uniqueSlug        String    @unique
-  subscriptionTier  String    @default("free")
-  subscriptionStatus String   @default("active")
   defaultPricePerBag String?
   orderLink         String?
+  coffeesUploaded   Int       @default(0) // Track number of coffees uploaded for payment
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -315,7 +314,6 @@ model Coffee {
   coffeeName            String
   roastedBy             String?
   sellerId              String?
-  subscriptionTier      String?
   origin                String
   region                String?
   altitude              String?

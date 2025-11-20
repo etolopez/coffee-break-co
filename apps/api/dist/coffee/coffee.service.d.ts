@@ -63,7 +63,6 @@ export interface CoffeeEntry {
     farmPhotos?: string[];
     roastingCurveImage?: string;
     region?: string;
-    subscriptionTier?: string;
 }
 export declare class CoffeeService {
     private readonly prisma;

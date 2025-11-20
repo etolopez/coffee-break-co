@@ -3,7 +3,7 @@
  * Handles admin dashboard and user management
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
@@ -199,6 +199,79 @@ export class AdminService {
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  /**
+   * Update a seller
+   */
+  async updateSeller(sellerId: string, sellerData: any) {
+    const seller = await this.prisma.seller.findUnique({
+      where: { id: sellerId },
+    });
+
+    if (!seller) {
+      throw new Error('Seller not found');
+    }
+
+    const updateData: any = {};
+    if (sellerData.companyName !== undefined) updateData.companyName = sellerData.companyName;
+    if (sellerData.companySize !== undefined) updateData.companySize = sellerData.companySize;
+    if (sellerData.mission !== undefined) updateData.mission = sellerData.mission;
+    if (sellerData.logo !== undefined) updateData.logo = sellerData.logo;
+    if (sellerData.phone !== undefined) updateData.phone = sellerData.phone;
+    if (sellerData.email !== undefined) updateData.email = sellerData.email;
+    if (sellerData.location !== undefined) updateData.location = sellerData.location;
+    if (sellerData.country !== undefined) updateData.country = sellerData.country;
+    if (sellerData.city !== undefined) updateData.city = sellerData.city;
+    if (sellerData.description !== undefined) updateData.description = sellerData.description;
+    if (sellerData.website !== undefined) updateData.website = sellerData.website;
+    if (sellerData.instagram !== undefined) updateData.instagram = sellerData.instagram;
+    if (sellerData.facebook !== undefined) updateData.facebook = sellerData.facebook;
+    if (sellerData.twitter !== undefined) updateData.twitter = sellerData.twitter;
+    if (sellerData.certifications !== undefined) updateData.certifications = sellerData.certifications;
+    if (sellerData.specialties !== undefined) updateData.specialties = sellerData.specialties;
+    if (sellerData.defaultPricePerBag !== undefined)
+      updateData.defaultPricePerBag = sellerData.defaultPricePerBag;
+    if (sellerData.orderLink !== undefined) updateData.orderLink = sellerData.orderLink;
+
+    return this.prisma.seller.update({
+      where: { id: sellerId },
+      data: updateData,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          },
+        },
+        _count: {
+          select: {
+            coffees: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Delete a seller
+   */
+  async deleteSeller(sellerId: string) {
+    const seller = await this.prisma.seller.findUnique({
+      where: { id: sellerId },
+    });
+
+    if (!seller) {
+      throw new NotFoundException('Seller not found');
+    }
+
+    await this.prisma.seller.delete({
+      where: { id: sellerId },
+    });
+
+    this.logger.log(`Seller deleted: ${sellerId}`);
+    return { message: 'Seller deleted successfully' };
   }
 }
 

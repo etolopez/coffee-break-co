@@ -39,7 +39,7 @@ export declare class UsersService {
             id: string;
             companyName: string;
             uniqueSlug: string;
-            subscriptionTier: string;
+            coffeesUploaded: number;
         }[];
     }>;
     /**

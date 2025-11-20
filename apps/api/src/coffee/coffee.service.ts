@@ -67,7 +67,6 @@ export interface CoffeeEntry {
   farmPhotos?: string[];
   roastingCurveImage?: string;
   region?: string;
-  subscriptionTier?: string;
 }
 
 @Injectable()
@@ -152,7 +151,6 @@ export class CoffeeService {
     if (coffee.weight) optionalFields.weight = coffee.weight;
     if (coffee.roastingCurveImage) optionalFields.roastingCurveImage = coffee.roastingCurveImage;
     if (coffee.region) optionalFields.region = coffee.region;
-    if (coffee.subscriptionTier) optionalFields.subscriptionTier = coffee.subscriptionTier;
 
     return { ...baseEntry, ...optionalFields } as CoffeeEntry;
   }

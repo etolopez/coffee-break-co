@@ -24,7 +24,7 @@ export declare class UsersController {
             id: string;
             companyName: string;
             uniqueSlug: string;
-            subscriptionTier: string;
+            coffeesUploaded: number;
         }[];
     }>;
     updateProfile(user: any, updateDto: UpdateProfileDto): Promise<{

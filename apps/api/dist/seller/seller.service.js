@@ -123,7 +123,7 @@ let SellerService = SellerService_1 = class SellerService {
               id, "companyName", "companySize", mission, logo, phone, email, 
               location, country, city, rating, "totalCoffees", "memberSince", 
               specialties, "featuredCoffeeId", description, website, instagram, 
-              facebook, twitter, certifications, "uniqueSlug", "subscriptionTier", 
+              facebook, twitter, certifications, "uniqueSlug", "coffeesUploaded", 
               "subscriptionStatus", "defaultPricePerBag", "orderLink", 
               "createdAt", "updatedAt"
             FROM sellers
@@ -172,7 +172,7 @@ let SellerService = SellerService_1 = class SellerService {
               id, "companyName", "companySize", mission, logo, phone, email, 
               location, country, city, rating, "totalCoffees", "memberSince", 
               specialties, "featuredCoffeeId", description, website, instagram, 
-              facebook, twitter, certifications, "uniqueSlug", "subscriptionTier", 
+              facebook, twitter, certifications, "uniqueSlug", "coffeesUploaded", 
               "subscriptionStatus", "defaultPricePerBag", "orderLink", 
               "createdAt", "updatedAt"
             FROM sellers

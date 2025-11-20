@@ -129,8 +129,6 @@ let CoffeeService = CoffeeService_1 = class CoffeeService {
             optionalFields.roastingCurveImage = coffee.roastingCurveImage;
         if (coffee.region)
             optionalFields.region = coffee.region;
-        if (coffee.subscriptionTier)
-            optionalFields.subscriptionTier = coffee.subscriptionTier;
         return { ...baseEntry, ...optionalFields };
     }
     /**

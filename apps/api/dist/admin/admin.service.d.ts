@@ -86,7 +86,6 @@ export declare class AdminService {
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
-        subscriptionTier: string;
         description: string | null;
         certifications: string[];
         companyName: string;
@@ -106,9 +105,9 @@ export declare class AdminService {
         facebook: string | null;
         twitter: string | null;
         uniqueSlug: string;
-        subscriptionStatus: string;
         defaultPricePerBag: string | null;
         orderLink: string | null;
+        coffeesUploaded: number;
         userId: string | null;
     })[]>;
     /**
@@ -130,7 +129,6 @@ export declare class AdminService {
         coffeeName: string;
         roastedBy: string | null;
         sellerId: string | null;
-        subscriptionTier: string | null;
         origin: string;
         region: string | null;
         altitude: string | null;
@@ -177,5 +175,53 @@ export declare class AdminService {
         womenWorkerPercentage: string | null;
         available: boolean;
     })[]>;
+    /**
+     * Update a seller
+     */
+    updateSeller(sellerId: string, sellerData: any): Promise<{
+        _count: {
+            coffees: number;
+        };
+        user: {
+            id: string;
+            email: string;
+            name: string | null;
+        } | null;
+    } & {
+        id: string;
+        email: string | null;
+        phone: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        certifications: string[];
+        companyName: string;
+        companySize: string | null;
+        mission: string | null;
+        logo: string | null;
+        location: string | null;
+        country: string | null;
+        city: string | null;
+        rating: number;
+        totalCoffees: number;
+        memberSince: number;
+        specialties: string[];
+        featuredCoffeeId: string | null;
+        website: string | null;
+        instagram: string | null;
+        facebook: string | null;
+        twitter: string | null;
+        uniqueSlug: string;
+        defaultPricePerBag: string | null;
+        orderLink: string | null;
+        coffeesUploaded: number;
+        userId: string | null;
+    }>;
+    /**
+     * Delete a seller
+     */
+    deleteSeller(sellerId: string): Promise<{
+        message: string;
+    }>;
 }
 //# sourceMappingURL=admin.service.d.ts.map

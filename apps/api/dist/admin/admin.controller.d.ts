@@ -33,14 +33,17 @@ export declare class AdminController {
         }[];
     }>;
     getAllUsers(): Promise<({
+        _count: {
+            favorites: number;
+        };
         profile: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
-            bio: string | null;
             location: string | null;
             website: string | null;
+            userId: string;
+            bio: string | null;
             preferences: import("@prisma/client/runtime/library").JsonValue | null;
         } | null;
         sellers: {
@@ -48,9 +51,6 @@ export declare class AdminController {
             companyName: string;
             uniqueSlug: string;
         }[];
-        _count: {
-            favorites: number;
-        };
     } & {
         id: string;
         email: string;
@@ -63,27 +63,27 @@ export declare class AdminController {
         updatedAt: Date;
     })[]>;
     getAllSellers(): Promise<({
+        _count: {
+            coffees: number;
+        };
         user: {
             id: string;
             email: string;
             name: string | null;
         } | null;
-        _count: {
-            coffees: number;
-        };
     } & {
         id: string;
         email: string | null;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;
-        userId: string | null;
-        location: string | null;
-        website: string | null;
+        description: string | null;
+        certifications: string[];
         companyName: string;
         companySize: string | null;
         mission: string | null;
         logo: string | null;
+        location: string | null;
         country: string | null;
         city: string | null;
         rating: number;
@@ -91,16 +91,15 @@ export declare class AdminController {
         memberSince: number;
         specialties: string[];
         featuredCoffeeId: string | null;
-        description: string | null;
+        website: string | null;
         instagram: string | null;
         facebook: string | null;
         twitter: string | null;
-        certifications: string[];
         uniqueSlug: string;
-        subscriptionTier: string;
-        subscriptionStatus: string;
         defaultPricePerBag: string | null;
         orderLink: string | null;
+        coffeesUploaded: number;
+        userId: string | null;
     })[]>;
     getAllCoffees(): Promise<({
         _count: {
@@ -115,9 +114,6 @@ export declare class AdminController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
-        certifications: string[];
-        subscriptionTier: string | null;
         coffeeName: string;
         roastedBy: string | null;
         sellerId: string | null;
@@ -129,6 +125,7 @@ export declare class AdminController {
         harvestYear: string | null;
         roastLevel: string | null;
         flavorNotes: string[];
+        description: string | null;
         price: string | null;
         currency: string | null;
         weight: string | null;
@@ -138,6 +135,7 @@ export declare class AdminController {
         roastingCurveImage: string | null;
         coordinatesLat: number | null;
         coordinatesLng: number | null;
+        certifications: string[];
         environmentalPractices: string[];
         farm: string | null;
         farmer: string | null;
@@ -165,5 +163,53 @@ export declare class AdminController {
         womenWorkerPercentage: string | null;
         available: boolean;
     })[]>;
+    /**
+     * Update a seller
+     */
+    updateSeller(id: string, sellerData: any): Promise<{
+        _count: {
+            coffees: number;
+        };
+        user: {
+            id: string;
+            email: string;
+            name: string | null;
+        } | null;
+    } & {
+        id: string;
+        email: string | null;
+        phone: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        certifications: string[];
+        companyName: string;
+        companySize: string | null;
+        mission: string | null;
+        logo: string | null;
+        location: string | null;
+        country: string | null;
+        city: string | null;
+        rating: number;
+        totalCoffees: number;
+        memberSince: number;
+        specialties: string[];
+        featuredCoffeeId: string | null;
+        website: string | null;
+        instagram: string | null;
+        facebook: string | null;
+        twitter: string | null;
+        uniqueSlug: string;
+        defaultPricePerBag: string | null;
+        orderLink: string | null;
+        coffeesUploaded: number;
+        userId: string | null;
+    }>;
+    /**
+     * Delete a seller
+     */
+    deleteSeller(id: string): Promise<{
+        message: string;
+    }>;
 }
 //# sourceMappingURL=admin.controller.d.ts.map

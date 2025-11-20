@@ -45,7 +45,7 @@ let UsersService = UsersService_1 = class UsersService {
                         id: true,
                         companyName: true,
                         uniqueSlug: true,
-                        subscriptionTier: true,
+                        coffeesUploaded: true,
                     },
                 },
             },

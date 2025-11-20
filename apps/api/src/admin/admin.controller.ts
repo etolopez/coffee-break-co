@@ -3,8 +3,17 @@
  * Handles admin-only endpoints
  */
 
-import { Controller, Get, UseGuards, Logger } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Logger,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -55,6 +64,30 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Coffees retrieved successfully' })
   async getAllCoffees() {
     return this.adminService.getAllCoffees();
+  }
+
+  /**
+   * Update a seller
+   */
+  @Put('sellers/:id')
+  @ApiOperation({ summary: 'Update a seller (admin only)' })
+  @ApiParam({ name: 'id', description: 'Seller ID' })
+  @ApiResponse({ status: 200, description: 'Seller updated successfully' })
+  @ApiResponse({ status: 404, description: 'Seller not found' })
+  async updateSeller(@Param('id') id: string, @Body() sellerData: any) {
+    return this.adminService.updateSeller(id, sellerData);
+  }
+
+  /**
+   * Delete a seller
+   */
+  @Delete('sellers/:id')
+  @ApiOperation({ summary: 'Delete a seller (admin only)' })
+  @ApiParam({ name: 'id', description: 'Seller ID' })
+  @ApiResponse({ status: 200, description: 'Seller deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Seller not found' })
+  async deleteSeller(@Param('id') id: string) {
+    return this.adminService.deleteSeller(id);
   }
 }
 

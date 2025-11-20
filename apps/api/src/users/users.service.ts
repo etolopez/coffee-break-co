@@ -53,7 +53,7 @@ export class UsersService {
             id: true,
             companyName: true,
             uniqueSlug: true,
-            subscriptionTier: true,
+            coffeesUploaded: true,
           },
         },
       },

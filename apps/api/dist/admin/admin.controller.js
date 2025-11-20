@@ -41,6 +41,18 @@ let AdminController = AdminController_1 = class AdminController {
     async getAllCoffees() {
         return this.adminService.getAllCoffees();
     }
+    /**
+     * Update a seller
+     */
+    async updateSeller(id, sellerData) {
+        return this.adminService.updateSeller(id, sellerData);
+    }
+    /**
+     * Delete a seller
+     */
+    async deleteSeller(id) {
+        return this.adminService.deleteSeller(id);
+    }
 };
 exports.AdminController = AdminController;
 tslib_1.__decorate([
@@ -75,6 +87,29 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", []),
     tslib_1.__metadata("design:returntype", Promise)
 ], AdminController.prototype, "getAllCoffees", null);
+tslib_1.__decorate([
+    (0, common_1.Put)('sellers/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update a seller (admin only)' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Seller ID' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Seller updated successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Seller not found' }),
+    tslib_1.__param(0, (0, common_1.Param)('id')),
+    tslib_1.__param(1, (0, common_1.Body)()),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [String, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], AdminController.prototype, "updateSeller", null);
+tslib_1.__decorate([
+    (0, common_1.Delete)('sellers/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete a seller (admin only)' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Seller ID' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Seller deleted successfully' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Seller not found' }),
+    tslib_1.__param(0, (0, common_1.Param)('id')),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [String]),
+    tslib_1.__metadata("design:returntype", Promise)
+], AdminController.prototype, "deleteSeller", null);
 exports.AdminController = AdminController = AdminController_1 = tslib_1.__decorate([
     (0, swagger_1.ApiTags)('admin'),
     (0, swagger_1.ApiBearerAuth)(),
