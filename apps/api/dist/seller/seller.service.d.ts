@@ -53,6 +53,7 @@ export declare class SellerService {
     getAllSellers(): Promise<Seller[]>;
     /**
      * Get seller by ID
+     * Handles missing userId column gracefully if migration hasn't been applied
      */
     getSellerById(id: string): Promise<Seller | null>;
 }

@@ -187,9 +187,11 @@ export class SellerService {
 
   /**
    * Get seller by ID
+   * Handles missing userId column gracefully if migration hasn't been applied
    */
   async getSellerById(id: string): Promise<Seller | null> {
     try {
+      // Try to fetch seller normally first
       const seller = await this.prisma.seller.findUnique({
         where: { id },
       });
@@ -199,7 +201,39 @@ export class SellerService {
       }
 
       return this.mapSellerToResponse(seller);
-    } catch (error) {
+    } catch (error: any) {
+      // Check if error is due to missing userId column
+      if (error?.message?.includes('sellers.userId') || error?.message?.includes('does not exist')) {
+        this.logger.warn(`userId column not found for seller ${id} - using fallback query without userId`);
+        
+        // Fallback: Use raw SQL query that doesn't include userId
+        try {
+          const sellers = await this.prisma.$queryRaw<PrismaSeller[]>`
+            SELECT 
+              id, "companyName", "companySize", mission, logo, phone, email, 
+              location, country, city, rating, "totalCoffees", "memberSince", 
+              specialties, "featuredCoffeeId", description, website, instagram, 
+              facebook, twitter, certifications, "uniqueSlug", "subscriptionTier", 
+              "subscriptionStatus", "defaultPricePerBag", "orderLink", 
+              "createdAt", "updatedAt"
+            FROM sellers
+            WHERE id = ${id}
+            LIMIT 1
+          `;
+
+          if (!sellers || sellers.length === 0 || !sellers[0]) {
+            return null;
+          }
+
+          const seller = sellers[0];
+          return this.mapSellerToResponse(seller);
+        } catch (fallbackError: any) {
+          this.logger.error(`Fallback query also failed for seller ${id}`, fallbackError);
+          throw new Error(`Failed to fetch seller. Database migration may not have been applied. Please check Railway logs.`);
+        }
+      }
+      
+      // For other errors, log and rethrow
       this.logger.error(`Error fetching seller by ID: ${id}`, error);
       throw error;
     }
