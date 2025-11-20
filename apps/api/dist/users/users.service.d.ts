@@ -37,9 +37,9 @@ export declare class UsersService {
         } | null;
         sellers: {
             id: string;
-            subscriptionTier: string;
             companyName: string;
             uniqueSlug: string;
+            subscriptionTier: string;
         }[];
     }>;
     /**
@@ -65,6 +65,7 @@ export declare class UsersService {
     getFavorites(userId: string): Promise<import("../coffee/coffee.service").CoffeeEntry[]>;
     /**
      * Add coffee to favorites
+     * Handles both coffee ID and slug
      */
     addFavorite(userId: string, coffeeId: string): Promise<{
         message: string;
@@ -77,12 +78,14 @@ export declare class UsersService {
     }>;
     /**
      * Remove coffee from favorites
+     * Handles both coffee ID and slug
      */
     removeFavorite(userId: string, coffeeId: string): Promise<{
         message: string;
     }>;
     /**
      * Check if coffee is favorited
+     * Handles both coffee ID and slug
      */
     isFavorited(userId: string, coffeeId: string): Promise<boolean>;
 }

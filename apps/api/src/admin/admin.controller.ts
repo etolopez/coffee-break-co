@@ -3,7 +3,7 @@
  * Handles admin-only endpoints
  */
 
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -16,13 +16,24 @@ import { Roles } from '../auth/decorators/roles.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('admin')
 export class AdminController {
+  private readonly logger = new Logger(AdminController.name);
+
   constructor(private readonly adminService: AdminService) {}
 
   @Get('dashboard')
   @ApiOperation({ summary: 'Get admin dashboard statistics' })
   @ApiResponse({ status: 200, description: 'Dashboard stats retrieved successfully' })
   async getDashboard() {
-    return this.adminService.getDashboardStats();
+    try {
+      return await this.adminService.getDashboardStats();
+    } catch (error: any) {
+      this.logger.error('Error in admin dashboard controller:', {
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+      });
+      throw error;
+    }
   }
 
   @Get('users')

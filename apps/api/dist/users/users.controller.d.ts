@@ -22,9 +22,9 @@ export declare class UsersController {
         } | null;
         sellers: {
             id: string;
-            subscriptionTier: string;
             companyName: string;
             uniqueSlug: string;
+            subscriptionTier: string;
         }[];
     }>;
     updateProfile(user: any, updateDto: UpdateProfileDto): Promise<{

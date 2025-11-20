@@ -147,92 +147,173 @@ export class UsersService {
 
   /**
    * Add coffee to favorites
+   * Handles both coffee ID and slug
    */
   async addFavorite(userId: string, coffeeId: string) {
-    // Check if coffee exists
-    const coffee = await this.prisma.coffee.findUnique({
-      where: { id: coffeeId },
-    });
+    try {
+      // Try to find coffee by ID first
+      let coffee = await this.prisma.coffee.findUnique({
+        where: { id: coffeeId },
+      });
 
-    if (!coffee) {
-      throw new NotFoundException('Coffee not found');
-    }
+      // If not found by ID, try by slug
+      if (!coffee) {
+        coffee = await this.prisma.coffee.findUnique({
+          where: { slug: coffeeId },
+        });
+      }
 
-    // Check if already favorited
-    const existing = await this.prisma.userFavorite.findUnique({
-      where: {
-        userId_coffeeId: {
-          userId,
-          coffeeId,
+      if (!coffee) {
+        this.logger.warn(`Coffee not found: ${coffeeId} (tried both ID and slug)`);
+        throw new NotFoundException(`Coffee not found: ${coffeeId}`);
+      }
+
+      // Use the actual database ID for the favorite
+      const actualCoffeeId = coffee.id;
+
+      // Check if already favorited (using actual database ID)
+      const existing = await this.prisma.userFavorite.findUnique({
+        where: {
+          userId_coffeeId: {
+            userId,
+            coffeeId: actualCoffeeId,
+          },
         },
-      },
-    });
+      });
 
-    if (existing) {
-      return { message: 'Coffee already in favorites', favorite: existing };
+      if (existing) {
+        return { message: 'Coffee already in favorites', favorite: existing };
+      }
+
+      // Add to favorites (using actual database ID)
+      const favorite = await this.prisma.userFavorite.create({
+        data: {
+          userId,
+          coffeeId: actualCoffeeId,
+        },
+        include: {
+          coffee: true,
+        },
+      });
+
+      this.logger.log(`Coffee ${actualCoffeeId} (${coffeeId}) added to favorites for user ${userId}`);
+
+      return { message: 'Coffee added to favorites', favorite };
+    } catch (error: any) {
+      this.logger.error(`Error adding favorite for user ${userId}, coffee ${coffeeId}:`, {
+        message: error.message,
+        code: error.code,
+        meta: error.meta,
+        stack: error.stack,
+      });
+      throw error;
     }
-
-    // Add to favorites
-    const favorite = await this.prisma.userFavorite.create({
-      data: {
-        userId,
-        coffeeId,
-      },
-      include: {
-        coffee: true,
-      },
-    });
-
-    this.logger.log(`Coffee ${coffeeId} added to favorites for user ${userId}`);
-
-    return { message: 'Coffee added to favorites', favorite };
   }
 
   /**
    * Remove coffee from favorites
+   * Handles both coffee ID and slug
    */
   async removeFavorite(userId: string, coffeeId: string) {
-    const favorite = await this.prisma.userFavorite.findUnique({
-      where: {
-        userId_coffeeId: {
-          userId,
-          coffeeId,
-        },
-      },
-    });
+    try {
+      // Try to find coffee by ID first
+      let coffee = await this.prisma.coffee.findUnique({
+        where: { id: coffeeId },
+      });
 
-    if (!favorite) {
-      throw new NotFoundException('Favorite not found');
+      // If not found by ID, try by slug
+      if (!coffee) {
+        coffee = await this.prisma.coffee.findUnique({
+          where: { slug: coffeeId },
+        });
+      }
+
+      if (!coffee) {
+        this.logger.warn(`Coffee not found for removal: ${coffeeId} (tried both ID and slug)`);
+        throw new NotFoundException(`Coffee not found: ${coffeeId}`);
+      }
+
+      // Use the actual database ID
+      const actualCoffeeId = coffee.id;
+
+      const favorite = await this.prisma.userFavorite.findUnique({
+        where: {
+          userId_coffeeId: {
+            userId,
+            coffeeId: actualCoffeeId,
+          },
+        },
+      });
+
+      if (!favorite) {
+        throw new NotFoundException('Favorite not found');
+      }
+
+      await this.prisma.userFavorite.delete({
+        where: {
+          userId_coffeeId: {
+            userId,
+            coffeeId: actualCoffeeId,
+          },
+        },
+      });
+
+      this.logger.log(`Coffee ${actualCoffeeId} (${coffeeId}) removed from favorites for user ${userId}`);
+
+      return { message: 'Coffee removed from favorites' };
+    } catch (error: any) {
+      this.logger.error(`Error removing favorite for user ${userId}, coffee ${coffeeId}:`, {
+        message: error.message,
+        code: error.code,
+        meta: error.meta,
+        stack: error.stack,
+      });
+      throw error;
     }
-
-    await this.prisma.userFavorite.delete({
-      where: {
-        userId_coffeeId: {
-          userId,
-          coffeeId,
-        },
-      },
-    });
-
-    this.logger.log(`Coffee ${coffeeId} removed from favorites for user ${userId}`);
-
-    return { message: 'Coffee removed from favorites' };
   }
 
   /**
    * Check if coffee is favorited
+   * Handles both coffee ID and slug
    */
   async isFavorited(userId: string, coffeeId: string): Promise<boolean> {
-    const favorite = await this.prisma.userFavorite.findUnique({
-      where: {
-        userId_coffeeId: {
-          userId,
-          coffeeId,
-        },
-      },
-    });
+    try {
+      // Try to find coffee by ID first
+      let coffee = await this.prisma.coffee.findUnique({
+        where: { id: coffeeId },
+      });
 
-    return !!favorite;
+      // If not found by ID, try by slug
+      if (!coffee) {
+        coffee = await this.prisma.coffee.findUnique({
+          where: { slug: coffeeId },
+        });
+      }
+
+      if (!coffee) {
+        return false;
+      }
+
+      // Use the actual database ID
+      const actualCoffeeId = coffee.id;
+
+      const favorite = await this.prisma.userFavorite.findUnique({
+        where: {
+          userId_coffeeId: {
+            userId,
+            coffeeId: actualCoffeeId,
+          },
+        },
+      });
+
+      return !!favorite;
+    } catch (error: any) {
+      this.logger.error(`Error checking favorite status for user ${userId}, coffee ${coffeeId}:`, {
+        message: error.message,
+        code: error.code,
+      });
+      return false; // Return false on error
+    }
   }
 }
 

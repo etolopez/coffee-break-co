@@ -3,6 +3,7 @@
  * Admin Controller
  * Handles admin-only endpoints
  */
+var AdminController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminController = void 0;
 const tslib_1 = require("tslib");
@@ -12,13 +13,24 @@ const admin_service_1 = require("./admin.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
-let AdminController = class AdminController {
+let AdminController = AdminController_1 = class AdminController {
     adminService;
+    logger = new common_1.Logger(AdminController_1.name);
     constructor(adminService) {
         this.adminService = adminService;
     }
     async getDashboard() {
-        return this.adminService.getDashboardStats();
+        try {
+            return await this.adminService.getDashboardStats();
+        }
+        catch (error) {
+            this.logger.error('Error in admin dashboard controller:', {
+                message: error.message,
+                code: error.code,
+                stack: error.stack,
+            });
+            throw error;
+        }
     }
     async getAllUsers() {
         return this.adminService.getAllUsers();
@@ -63,7 +75,7 @@ tslib_1.__decorate([
     tslib_1.__metadata("design:paramtypes", []),
     tslib_1.__metadata("design:returntype", Promise)
 ], AdminController.prototype, "getAllCoffees", null);
-exports.AdminController = AdminController = tslib_1.__decorate([
+exports.AdminController = AdminController = AdminController_1 = tslib_1.__decorate([
     (0, swagger_1.ApiTags)('admin'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('api/admin'),
