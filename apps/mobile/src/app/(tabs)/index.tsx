@@ -19,6 +19,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, borderRadius, shadows } from '../../config/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '../../contexts/AuthContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -28,6 +29,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <ScrollView
@@ -35,6 +37,37 @@ export default function HomeScreen() {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
+      {/* Header with Auth */}
+      <View style={styles.header}>
+        {isAuthenticated && user ? (
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => router.push('/profile')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="person-circle" size={32} color={colors.primary[600]} />
+            <Text style={styles.profileText}>{user.name || user.email}</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.authButtons}>
+            <TouchableOpacity
+              style={styles.authButton}
+              onPress={() => router.push('/login')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.authButtonText}>Sign In</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.authButton, styles.authButtonPrimary]}
+              onPress={() => router.push('/signup')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.authButtonText, styles.authButtonTextPrimary]}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
       {/* Hero Section */}
       <LinearGradient
         colors={[colors.primary[50], colors.secondary[50], colors.primary[100]]}
@@ -197,6 +230,50 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingBottom: spacing['3xl'],
+  },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  profileButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.neutral.gray50,
+  },
+  profileText: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.neutral.gray900,
+  },
+  authButtons: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  authButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.primary[300],
+  },
+  authButtonPrimary: {
+    backgroundColor: colors.primary[600],
+    borderColor: colors.primary[600],
+  },
+  authButtonText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.primary[600],
+  },
+  authButtonTextPrimary: {
+    color: colors.neutral.white,
   },
   heroSection: {
     paddingHorizontal: spacing.lg,
