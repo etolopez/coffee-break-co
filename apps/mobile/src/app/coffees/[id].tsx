@@ -31,28 +31,67 @@ export default function CoffeeDetailScreen() {
   useEffect(() => {
     const fetchCoffee = async () => {
       try {
-        // Try to fetch by ID first, then by slug if that fails
-        // IDs are typically CUIDs (long alphanumeric strings)
-        // Slugs are typically shorter, URL-friendly strings
+        // Determine if the parameter is likely an ID or slug
+        // CUIDs typically start with 'c' and are 25 characters long
+        // Slugs are typically shorter, contain hyphens, and don't start with 'c'
+        const looksLikeId = id && id.length > 20 && id.startsWith('c');
+        const looksLikeSlug = id && (id.includes('-') || id.length < 20);
+        
         let data: CoffeeEntry | null = null;
         
-        // Check if it looks like an ID (CUID format: starts with 'c' and is long)
-        // or try ID first, then slug as fallback
-        try {
-          data = await coffeeService.getCoffeeById(id);
-        } catch (idError) {
-          // If ID lookup fails, try slug
+        // Try the appropriate method first based on what it looks like
+        if (looksLikeId) {
+          // Looks like an ID, try ID first
+          try {
+            data = await coffeeService.getCoffeeById(id);
+          } catch (idError) {
+            // If ID fails, try slug as fallback
+            logger.debug('ID lookup failed, trying slug', { id });
+            try {
+              data = await coffeeService.getCoffeeBySlug(id);
+            } catch (slugError) {
+              logger.error('Error fetching coffee by both ID and slug', { id, idError, slugError });
+              throw slugError;
+            }
+          }
+        } else if (looksLikeSlug) {
+          // Looks like a slug, try slug first
           try {
             data = await coffeeService.getCoffeeBySlug(id);
           } catch (slugError) {
-            logger.error('Error fetching coffee by both ID and slug', { id, idError, slugError });
-            throw slugError; // Throw the slug error as final error
+            // If slug fails, try ID as fallback
+            logger.debug('Slug lookup failed, trying ID', { id });
+            try {
+              data = await coffeeService.getCoffeeById(id);
+            } catch (idError) {
+              logger.error('Error fetching coffee by both slug and ID', { id, slugError, idError });
+              throw idError;
+            }
+          }
+        } else {
+          // Unknown format, try both
+          try {
+            data = await coffeeService.getCoffeeById(id);
+          } catch (idError) {
+            try {
+              data = await coffeeService.getCoffeeBySlug(id);
+            } catch (slugError) {
+              logger.error('Error fetching coffee - tried both ID and slug', { id, idError, slugError });
+              throw slugError;
+            }
           }
         }
         
-        setCoffee(data);
+        // Check if we got an error response object
+        if (data && 'error' in data) {
+          logger.error('API returned error object', data);
+          setCoffee(null);
+        } else {
+          setCoffee(data);
+        }
       } catch (error) {
         logger.error('Error fetching coffee', error);
+        setCoffee(null);
       } finally {
         setLoading(false);
       }

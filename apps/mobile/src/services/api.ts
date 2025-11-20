@@ -121,8 +121,14 @@ export const coffeeService = {
   async getCoffeeById(id: string): Promise<CoffeeEntry> {
     try {
       const url = buildApiUrl(API_ENDPOINTS.COFFEE_BY_ID(id));
-      const response = await apiClient.get<CoffeeEntry>(url);
-      return response.data;
+      const response = await apiClient.get<CoffeeEntry | { error: string }>(url);
+      
+      // Check if response is an error object
+      if (response.data && typeof response.data === 'object' && 'error' in response.data) {
+        throw new Error((response.data as { error: string }).error);
+      }
+      
+      return response.data as CoffeeEntry;
     } catch (error) {
       logger.error(`Error fetching coffee ${id}`, error);
       logApiError(API_ENDPOINTS.COFFEE_BY_ID(id), 'GET', error as AxiosError);
@@ -136,8 +142,14 @@ export const coffeeService = {
   async getCoffeeBySlug(slug: string): Promise<CoffeeEntry> {
     try {
       const url = buildApiUrl(API_ENDPOINTS.COFFEE_BY_SLUG(slug));
-      const response = await apiClient.get<CoffeeEntry>(url);
-      return response.data;
+      const response = await apiClient.get<CoffeeEntry | { error: string }>(url);
+      
+      // Check if response is an error object
+      if (response.data && typeof response.data === 'object' && 'error' in response.data) {
+        throw new Error((response.data as { error: string }).error);
+      }
+      
+      return response.data as CoffeeEntry;
     } catch (error) {
       logger.error(`Error fetching coffee by slug ${slug}`, error);
       logApiError(API_ENDPOINTS.COFFEE_BY_SLUG(slug), 'GET', error as AxiosError);
