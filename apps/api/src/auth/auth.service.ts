@@ -95,8 +95,27 @@ export class AuthService {
         token,
       };
     } catch (error: any) {
-      if (error.code === 'P1001' || error.message?.includes('database')) {
-        this.logger.error('Database connection error during registration');
+      // Check for various Prisma database connection errors
+      const prismaErrorCodes = ['P1001', 'P1002', 'P1003', 'P1008', 'P1010', 'P1011', 'P1017'];
+      const isDatabaseError = 
+        prismaErrorCodes.includes(error.code) ||
+        error.message?.includes('database') ||
+        error.message?.includes('connection') ||
+        error.message?.includes('timeout') ||
+        error.message?.includes('ECONNREFUSED') ||
+        error.message?.includes('relation "users" does not exist'); // Table doesn't exist (migration not run)
+      
+      if (isDatabaseError) {
+        this.logger.error('Database connection error during registration', {
+          code: error.code,
+          message: error.message,
+        });
+        
+        // Provide more specific error message
+        if (error.message?.includes('relation "users" does not exist')) {
+          throw new ConflictException('Database migration not applied. Please check Railway logs and ensure migrations have run.');
+        }
+        
         throw new ConflictException('Database is not available. Please check your database connection.');
       }
       throw error;
@@ -149,8 +168,27 @@ export class AuthService {
         token,
       };
     } catch (error: any) {
-      if (error.code === 'P1001' || error.message?.includes('database')) {
-        this.logger.error('Database connection error during login');
+      // Check for various Prisma database connection errors
+      const prismaErrorCodes = ['P1001', 'P1002', 'P1003', 'P1008', 'P1010', 'P1011', 'P1017'];
+      const isDatabaseError = 
+        prismaErrorCodes.includes(error.code) ||
+        error.message?.includes('database') ||
+        error.message?.includes('connection') ||
+        error.message?.includes('timeout') ||
+        error.message?.includes('ECONNREFUSED') ||
+        error.message?.includes('relation "users" does not exist'); // Table doesn't exist (migration not run)
+      
+      if (isDatabaseError) {
+        this.logger.error('Database connection error during login', {
+          code: error.code,
+          message: error.message,
+        });
+        
+        // Provide more specific error message
+        if (error.message?.includes('relation "users" does not exist')) {
+          throw new UnauthorizedException('Database migration not applied. Please check Railway logs and ensure migrations have run.');
+        }
+        
         throw new UnauthorizedException('Database is not available. Please check your database connection.');
       }
       throw error;
