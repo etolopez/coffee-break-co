@@ -257,9 +257,28 @@ export default function AdminScreen() {
           )}
         </View>
 
-        {/* Recent Coffees */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Coffees</Text>
+          {/* Admin Actions */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Admin Actions</Text>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => router.push('/admin-sellers')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.actionCardLeft}>
+                <Ionicons name="storefront" size={32} color={colors.primary[600]} />
+                <View style={styles.actionCardText}>
+                  <Text style={styles.actionCardTitle}>Manage Sellers</Text>
+                  <Text style={styles.actionCardSubtitle}>View, edit, and delete sellers</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.neutral.gray400} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Recent Coffees */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Recent Coffees</Text>
           {stats.recentCoffees.length === 0 ? (
             <Text style={styles.emptyText}>No coffees yet</Text>
           ) : (
@@ -484,12 +503,40 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     color: colors.primary[600],
   },
-  emptyText: {
-    fontSize: typography.fontSize.base,
-    color: colors.neutral.gray500,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    paddingVertical: spacing.xl,
-  },
-});
+    emptyText: {
+      fontSize: typography.fontSize.base,
+      color: colors.neutral.gray500,
+      fontStyle: 'italic',
+      textAlign: 'center',
+      paddingVertical: spacing.xl,
+    },
+    actionCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: colors.neutral.gray50,
+      padding: spacing.md,
+      borderRadius: borderRadius.md,
+      marginBottom: spacing.sm,
+    },
+    actionCardLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+      gap: spacing.md,
+    },
+    actionCardText: {
+      flex: 1,
+    },
+    actionCardTitle: {
+      fontSize: typography.fontSize.base,
+      fontWeight: typography.fontWeight.semibold,
+      color: colors.neutral.gray900,
+      marginBottom: spacing.xs,
+    },
+    actionCardSubtitle: {
+      fontSize: typography.fontSize.sm,
+      color: colors.neutral.gray600,
+    },
+  });
 
