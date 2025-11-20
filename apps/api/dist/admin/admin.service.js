@@ -28,7 +28,9 @@ let AdminService = AdminService_1 = class AdminService {
         // Get users by role
         const usersByRole = await this.prisma.user.groupBy({
             by: ['role'],
-            _count: true,
+            _count: {
+                role: true,
+            },
         });
         // Get recent users
         const recentUsers = await this.prisma.user.findMany({
@@ -62,7 +64,7 @@ let AdminService = AdminService_1 = class AdminService {
             },
             usersByRole: usersByRole.map((item) => ({
                 role: item.role,
-                count: item._count,
+                count: item._count?.role || 0,
             })),
             recentUsers,
             recentCoffees,

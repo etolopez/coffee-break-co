@@ -19,7 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography, spacing, borderRadius, shadows } from '../config/theme';
 import { useAuth } from '../contexts/AuthContext';
-import { buildApiUrl } from '../config/api';
+import { adminService } from '../services/api';
 import { logger } from '../utils/logger';
 
 interface DashboardStats {
@@ -59,22 +59,17 @@ export default function AdminScreen() {
    */
   const loadStats = async () => {
     try {
-      const response = await fetch(buildApiUrl('/api/admin/dashboard'), {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-      } else if (response.status === 403) {
-        // Not authorized
-        logger.warn('User is not an admin');
-      }
-    } catch (error) {
+      setLoading(true);
+      const data = await adminService.getDashboardStats();
+      setStats(data);
+      logger.info('Admin dashboard stats loaded successfully');
+    } catch (error: any) {
       logger.error('Error loading admin stats', error);
+      // Check if it's an authorization error
+      if (error.response?.status === 403 || error.response?.status === 401) {
+        logger.warn('User is not authorized to access admin dashboard');
+      }
+      setStats(null);
     } finally {
       setLoading(false);
       setRefreshing(false);

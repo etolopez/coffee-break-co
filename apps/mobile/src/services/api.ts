@@ -257,6 +257,37 @@ export const sellerService = {
 };
 
 /**
+ * Admin API Service
+ * Handles all admin-related API calls
+ */
+export const adminService = {
+  /**
+   * Fetch admin dashboard statistics
+   */
+  async getDashboardStats(): Promise<{
+    stats: {
+      totalUsers: number;
+      totalSellers: number;
+      totalCoffees: number;
+      totalFavorites: number;
+    };
+    usersByRole: Array<{ role: string; count: number }>;
+    recentUsers: Array<{ id: string; email: string; name: string | null; role: string; createdAt: string }>;
+    recentCoffees: Array<{ id: string; coffeeName: string; origin: string; createdAt: string }>;
+  }> {
+    try {
+      const url = buildApiUrl('/api/admin/dashboard');
+      const response = await apiClient.get(url);
+      return response.data;
+    } catch (error) {
+      logger.error('Error fetching admin dashboard stats', error);
+      logApiError('/api/admin/dashboard', 'GET', error as AxiosError);
+      throw new Error(handleApiError(error as AxiosError));
+    }
+  },
+};
+
+/**
  * Health check service
  */
 export const healthService = {
