@@ -25,21 +25,40 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     try {
       // Check if DATABASE_URL is set
       const databaseUrl = process.env['DATABASE_URL'];
+      const nodeEnv = process.env['NODE_ENV'] || 'development';
+      
       if (!databaseUrl) {
-        this.logger.error('❌ DATABASE_URL environment variable is not set!');
-        this.logger.error('📝 Please add PostgreSQL database to Railway:');
-        this.logger.error('   1. Go to Railway project → "+ New" → "Database" → "Add PostgreSQL"');
-        this.logger.error('   2. Railway will automatically set DATABASE_URL');
-        this.logger.error('   3. Then run: npm run prisma:deploy && npm run db:seed');
-        throw new Error('DATABASE_URL is not set. Please add PostgreSQL database to Railway.');
+        if (nodeEnv === 'production') {
+          this.logger.error('❌ DATABASE_URL environment variable is not set!');
+          this.logger.error('📝 Please add PostgreSQL database to Railway:');
+          this.logger.error('   1. Go to Railway project → "+ New" → "Database" → "Add PostgreSQL"');
+          this.logger.error('   2. Railway will automatically set DATABASE_URL');
+          this.logger.error('   3. Then run: npm run prisma:deploy && npm run db:seed');
+          throw new Error('DATABASE_URL is not set. Please add PostgreSQL database to Railway.');
+        } else {
+          this.logger.warn('⚠️  DATABASE_URL not set - running in development mode without database');
+          this.logger.warn('📝 To use database features, set DATABASE_URL in .env file');
+          return; // Allow app to start without database in development
+        }
       }
 
       await this.$connect();
       this.logger.log('✅ Successfully connected to PostgreSQL database');
     } catch (error: any) {
+      const nodeEnv = process.env['NODE_ENV'] || 'development';
+      
+      // In development, allow app to start even if database connection fails
+      if (nodeEnv !== 'production') {
+        this.logger.warn('⚠️  Failed to connect to PostgreSQL database');
+        this.logger.warn('📝 Running in development mode without database');
+        this.logger.warn('📝 Error:', error.message || error);
+        this.logger.warn('📝 To fix: Set DATABASE_URL in .env file or ensure Railway database is accessible');
+        return; // Don't throw error in development
+      }
+      
+      // In production, fail hard
       this.logger.error('❌ Failed to connect to PostgreSQL database');
       if (error.message?.includes('DATABASE_URL')) {
-        // Already logged helpful message above
         throw error;
       }
       this.logger.error('Error details:', error.message || error);
