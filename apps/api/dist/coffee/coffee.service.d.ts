@@ -4,6 +4,7 @@
  * Migrated from JSON file storage to database-backed storage
  */
 import { PrismaService } from '../database/prisma.service';
+import { Coffee } from '@prisma/client';
 /**
  * Coffee entry interface matching the API response structure
  * Maps Prisma model to API response format
@@ -76,7 +77,7 @@ export declare class CoffeeService {
      * Map Prisma Coffee model to CoffeeEntry interface
      * Converts database model to API response format
      */
-    private mapCoffeeToEntry;
+    mapCoffeeToEntry(coffee: Coffee): CoffeeEntry;
     /**
      * Get all coffee entries
      * Optionally filter by sellerId

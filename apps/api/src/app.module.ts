@@ -4,8 +4,6 @@
  */
 
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
@@ -43,9 +41,5 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
       useClass: JwtAuthGuard,
     },
   ],
-})
-export class AppModule {}
-  controllers: [AppController],
-  providers: [],
 })
 export class AppModule {}

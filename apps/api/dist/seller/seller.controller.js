@@ -8,6 +8,7 @@ exports.SellerController = void 0;
 const tslib_1 = require("tslib");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const public_decorator_1 = require("../auth/decorators/public.decorator");
 const seller_service_1 = require("./seller.service");
 let SellerController = class SellerController {
     sellerService;
@@ -35,6 +36,8 @@ let SellerController = class SellerController {
 exports.SellerController = SellerController;
 tslib_1.__decorate([
     (0, common_1.Get)(),
+    (0, public_decorator_1.Public)() // Make seller listings public
+    ,
     (0, swagger_1.ApiOperation)({
         summary: 'Get all sellers',
         description: 'Retrieve all sellers with their coffee data',
@@ -49,6 +52,7 @@ tslib_1.__decorate([
 ], SellerController.prototype, "getAllSellers", null);
 tslib_1.__decorate([
     (0, common_1.Get)(':id'),
+    (0, public_decorator_1.Public)(),
     (0, swagger_1.ApiOperation)({
         summary: 'Get seller by ID',
         description: 'Retrieve a specific seller by their ID',

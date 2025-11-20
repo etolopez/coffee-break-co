@@ -56,6 +56,8 @@ tslib_1.__decorate([
 ], CoffeeController.prototype, "getAllCoffees", null);
 tslib_1.__decorate([
     (0, common_1.Get)(':id'),
+    Public() // Make coffee details public
+    ,
     (0, swagger_1.ApiOperation)({
         summary: 'Get coffee by ID',
         description: 'Retrieve a specific coffee entry by its ID',
@@ -79,6 +81,8 @@ tslib_1.__decorate([
 ], CoffeeController.prototype, "getCoffeeById", null);
 tslib_1.__decorate([
     (0, common_1.Get)('slug/:slug'),
+    Public() // Make coffee details by slug public
+    ,
     (0, swagger_1.ApiOperation)({
         summary: 'Get coffee by slug',
         description: 'Retrieve a specific coffee entry by its slug',
