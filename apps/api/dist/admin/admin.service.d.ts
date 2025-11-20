@@ -12,41 +12,59 @@ export declare class AdminService {
      */
     getDashboardStats(): Promise<{
         stats: {
-            totalUsers: any;
-            totalSellers: any;
-            totalCoffees: any;
-            totalFavorites: any;
+            totalUsers: number;
+            totalSellers: number;
+            totalCoffees: number;
+            totalFavorites: number;
         };
-        usersByRole: any;
-        recentUsers: any;
+        usersByRole: {
+            role: string;
+            count: number;
+        }[];
+        recentUsers: {
+            id: string;
+            email: string;
+            name: string | null;
+            role: string;
+            createdAt: Date;
+        }[];
         recentCoffees: {
             id: string;
-            origin: string;
-            coffeeName: string;
             createdAt: Date;
+            coffeeName: string;
+            origin: string;
         }[];
     }>;
     /**
      * Get all users
      */
-    getAllUsers(): Promise<any>;
+    getAllUsers(): Promise<{
+        id: string;
+        email: string;
+        password: string;
+        name: string | null;
+        role: string;
+        avatar: string | null;
+        phone: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }[]>;
     /**
      * Get all sellers with details
      */
     getAllSellers(): Promise<{
-        description: string | null;
         id: string;
-        location: string | null;
         email: string | null;
-        subscriptionTier: string;
-        certifications: string[];
+        phone: string | null;
         createdAt: Date;
         updatedAt: Date;
+        userId: string | null;
+        location: string | null;
+        website: string | null;
         companyName: string;
         companySize: string | null;
         mission: string | null;
         logo: string | null;
-        phone: string | null;
         country: string | null;
         city: string | null;
         rating: number;
@@ -54,11 +72,13 @@ export declare class AdminService {
         memberSince: number;
         specialties: string[];
         featuredCoffeeId: string | null;
-        website: string | null;
+        description: string | null;
         instagram: string | null;
         facebook: string | null;
         twitter: string | null;
+        certifications: string[];
         uniqueSlug: string;
+        subscriptionTier: string;
         subscriptionStatus: string;
         defaultPricePerBag: string | null;
         orderLink: string | null;
@@ -66,16 +86,26 @@ export declare class AdminService {
     /**
      * Get all coffees with details
      */
-    getAllCoffees(): Promise<{
-        description: string | null;
+    getAllCoffees(): Promise<({
+        _count: {
+            favorites: number;
+        };
+        seller: {
+            id: string;
+            companyName: string;
+            uniqueSlug: string;
+        } | null;
+    } & {
         id: string;
-        finish: string | null;
-        body: string | null;
-        origin: string;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        certifications: string[];
+        subscriptionTier: string | null;
         coffeeName: string;
         roastedBy: string | null;
         sellerId: string | null;
-        subscriptionTier: string | null;
+        origin: string;
         region: string | null;
         altitude: string | null;
         process: string | null;
@@ -92,7 +122,6 @@ export declare class AdminService {
         roastingCurveImage: string | null;
         coordinatesLat: number | null;
         coordinatesLng: number | null;
-        certifications: string[];
         environmentalPractices: string[];
         farm: string | null;
         farmer: string | null;
@@ -105,8 +134,10 @@ export declare class AdminService {
         aroma: string | null;
         flavor: string | null;
         acidity: string | null;
+        body: string | null;
         primaryNotes: string | null;
         secondaryNotes: string | null;
+        finish: string | null;
         fermentationTime: string | null;
         dryingTime: string | null;
         moistureContent: string | null;
@@ -117,8 +148,6 @@ export declare class AdminService {
         communityProjects: string | null;
         womenWorkerPercentage: string | null;
         available: boolean;
-        createdAt: Date;
-        updatedAt: Date;
-    }[]>;
+    })[]>;
 }
 //# sourceMappingURL=admin.service.d.ts.map

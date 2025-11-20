@@ -227,7 +227,7 @@ model User {
   // Relations
   profile   UserProfile?
   favorites UserFavorite[]
-  seller    Seller?  // If user is a seller, link to Seller record
+  sellers   Seller[]  // If user is a seller, link to Seller records
 
   @@map("users")
   @@index([email])
@@ -302,7 +302,8 @@ model Seller {
 
   // Relations
   coffees           Coffee[]
-  user              User?  // Link to User if seller has account
+  userId            String?  // Foreign key to User
+  user              User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("sellers")
   @@index([uniqueSlug])

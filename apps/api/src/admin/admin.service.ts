@@ -100,7 +100,7 @@ export class AdminService {
   async getAllSellers() {
     return this.prisma.seller.findMany({
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             email: true,

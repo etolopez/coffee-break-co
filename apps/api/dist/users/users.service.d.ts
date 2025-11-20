@@ -21,21 +21,59 @@ export declare class UsersService {
     /**
      * Get user profile
      */
-    getProfile(userId: string): Promise<any>;
+    getProfile(userId: string): Promise<{
+        id: string;
+        email: string;
+        name: string | null;
+        role: string;
+        avatar: string | null;
+        phone: string | null;
+        createdAt: Date;
+        profile: {
+            bio: string | null;
+            location: string | null;
+            website: string | null;
+            preferences: import("@prisma/client/runtime/library").JsonValue;
+        } | null;
+        sellers: {
+            id: string;
+            companyName: string;
+            uniqueSlug: string;
+            subscriptionTier: string;
+        }[];
+    }>;
     /**
      * Update user profile
      */
-    updateProfile(userId: string, updateDto: UpdateProfileDto): Promise<any>;
+    updateProfile(userId: string, updateDto: UpdateProfileDto): Promise<{
+        id: string;
+        email: string;
+        name: string | null;
+        role: string;
+        avatar: string | null;
+        phone: string | null;
+        profile: {
+            bio: string | null;
+            location: string | null;
+            website: string | null;
+            preferences: import("@prisma/client/runtime/library").JsonValue;
+        } | null;
+    }>;
     /**
      * Get user favorites
      */
-    getFavorites(userId: string): Promise<any>;
+    getFavorites(userId: string): Promise<import("../coffee/coffee.service").CoffeeEntry[]>;
     /**
      * Add coffee to favorites
      */
     addFavorite(userId: string, coffeeId: string): Promise<{
         message: string;
-        favorite: any;
+        favorite: {
+            id: string;
+            createdAt: Date;
+            userId: string;
+            coffeeId: string;
+        };
     }>;
     /**
      * Remove coffee from favorites

@@ -8,6 +8,7 @@ exports.CoffeeController = void 0;
 const tslib_1 = require("tslib");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const public_decorator_1 = require("../auth/decorators/public.decorator");
 const coffee_service_1 = require("./coffee.service");
 let CoffeeController = class CoffeeController {
     coffeeService;
@@ -56,7 +57,7 @@ tslib_1.__decorate([
 ], CoffeeController.prototype, "getAllCoffees", null);
 tslib_1.__decorate([
     (0, common_1.Get)(':id'),
-    Public() // Make coffee details public
+    (0, public_decorator_1.Public)() // Make coffee details public
     ,
     (0, swagger_1.ApiOperation)({
         summary: 'Get coffee by ID',
@@ -81,7 +82,7 @@ tslib_1.__decorate([
 ], CoffeeController.prototype, "getCoffeeById", null);
 tslib_1.__decorate([
     (0, common_1.Get)('slug/:slug'),
-    Public() // Make coffee details by slug public
+    (0, public_decorator_1.Public)() // Make coffee details by slug public
     ,
     (0, swagger_1.ApiOperation)({
         summary: 'Get coffee by slug',

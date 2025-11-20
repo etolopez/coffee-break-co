@@ -32,10 +32,6 @@ export class UsersService {
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: {
-        profile: true,
-        seller: true,
-      },
       select: {
         id: true,
         email: true,
@@ -52,7 +48,7 @@ export class UsersService {
             preferences: true,
           },
         },
-        seller: {
+        sellers: {
           select: {
             id: true,
             companyName: true,
@@ -99,9 +95,6 @@ export class UsersService {
             },
           },
         },
-      },
-      include: {
-        profile: true,
       },
       select: {
         id: true,

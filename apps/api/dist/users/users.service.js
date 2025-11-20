@@ -24,10 +24,6 @@ let UsersService = UsersService_1 = class UsersService {
     async getProfile(userId) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
-            include: {
-                profile: true,
-                seller: true,
-            },
             select: {
                 id: true,
                 email: true,
@@ -44,7 +40,7 @@ let UsersService = UsersService_1 = class UsersService {
                         preferences: true,
                     },
                 },
-                seller: {
+                sellers: {
                     select: {
                         id: true,
                         companyName: true,
@@ -87,9 +83,6 @@ let UsersService = UsersService_1 = class UsersService {
                         },
                     },
                 },
-            },
-            include: {
-                profile: true,
             },
             select: {
                 id: true,

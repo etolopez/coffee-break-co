@@ -5,6 +5,7 @@
 
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { Public } from '../auth/decorators/public.decorator';
 import { CoffeeService } from './coffee.service';
 
 @ApiTags('coffee')

@@ -6,12 +6,50 @@ import { UsersService, UpdateProfileDto } from './users.service';
 export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
-    getProfile(user: any): Promise<any>;
-    updateProfile(user: any, updateDto: UpdateProfileDto): Promise<any>;
-    getFavorites(user: any): Promise<any>;
+    getProfile(user: any): Promise<{
+        id: string;
+        email: string;
+        name: string | null;
+        role: string;
+        avatar: string | null;
+        phone: string | null;
+        createdAt: Date;
+        profile: {
+            bio: string | null;
+            location: string | null;
+            website: string | null;
+            preferences: import("@prisma/client/runtime/library").JsonValue;
+        } | null;
+        sellers: {
+            id: string;
+            companyName: string;
+            uniqueSlug: string;
+            subscriptionTier: string;
+        }[];
+    }>;
+    updateProfile(user: any, updateDto: UpdateProfileDto): Promise<{
+        id: string;
+        email: string;
+        name: string | null;
+        role: string;
+        avatar: string | null;
+        phone: string | null;
+        profile: {
+            bio: string | null;
+            location: string | null;
+            website: string | null;
+            preferences: import("@prisma/client/runtime/library").JsonValue;
+        } | null;
+    }>;
+    getFavorites(user: any): Promise<import("../coffee/coffee.service").CoffeeEntry[]>;
     addFavorite(user: any, coffeeId: string): Promise<{
         message: string;
-        favorite: any;
+        favorite: {
+            id: string;
+            createdAt: Date;
+            userId: string;
+            coffeeId: string;
+        };
     }>;
     removeFavorite(user: any, coffeeId: string): Promise<{
         message: string;
