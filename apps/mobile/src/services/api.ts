@@ -5,6 +5,7 @@
  */
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { buildApiUrl, API_ENDPOINTS } from '../config/api';
 import { ApiResponse, CoffeeEntry, Seller, CoffeeRating } from '../types';
 import { logger, logApiError, logNetworkError } from '../utils/logger';
@@ -19,9 +20,19 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Add request interceptor for debugging
+// Add request interceptor for auth token and debugging
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    // Add auth token if available
+    try {
+      const token = await AsyncStorage.getItem('@coffee_break_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      logger.error('Error getting auth token', error);
+    }
+
     const fullUrl = buildApiUrl(config.url || '');
     logger.info(`API Request: ${config.method?.toUpperCase()} ${fullUrl}`);
     logger.debug('Request Config:', {
