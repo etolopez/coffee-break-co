@@ -11,6 +11,7 @@ export declare class SellerCoffeeService {
     constructor(prisma: PrismaService, coffeeService: CoffeeService);
     /**
      * Get seller ID from user ID
+     * Handles missing userId column gracefully
      */
     private getSellerIdFromUserId;
     /**

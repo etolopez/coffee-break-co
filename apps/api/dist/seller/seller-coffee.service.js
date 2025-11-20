@@ -20,13 +20,44 @@ let SellerCoffeeService = SellerCoffeeService_1 = class SellerCoffeeService {
     }
     /**
      * Get seller ID from user ID
+     * Handles missing userId column gracefully
      */
     async getSellerIdFromUserId(userId) {
-        const seller = await this.prisma.seller.findFirst({
-            where: { userId },
-            select: { id: true },
-        });
-        return seller?.id || null;
+        try {
+            // Try to find seller by userId
+            const seller = await this.prisma.seller.findFirst({
+                where: { userId },
+                select: { id: true },
+            });
+            return seller?.id || null;
+        }
+        catch (error) {
+            // If userId column doesn't exist, try to find seller by user email
+            if (error?.message?.includes('sellers.userId') || error?.message?.includes('does not exist')) {
+                this.logger.warn(`userId column not found - trying to find seller by user email for ${userId}`);
+                // Get user email first
+                const user = await this.prisma.user.findUnique({
+                    where: { id: userId },
+                    select: { email: true },
+                });
+                if (!user) {
+                    return null;
+                }
+                // Try to find seller by email (if sellers have email field)
+                try {
+                    const seller = await this.prisma.seller.findFirst({
+                        where: { email: user.email },
+                        select: { id: true },
+                    });
+                    return seller?.id || null;
+                }
+                catch (e) {
+                    this.logger.warn('Could not find seller by email either');
+                    return null;
+                }
+            }
+            throw error;
+        }
     }
     /**
      * Get all coffees for the current seller
