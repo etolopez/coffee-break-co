@@ -5,6 +5,7 @@
 import { SellerService } from './seller.service';
 export declare class SellerController {
     private readonly sellerService;
+    private readonly logger;
     constructor(sellerService: SellerService);
     getAllSellers(): Promise<{
         success: boolean;
