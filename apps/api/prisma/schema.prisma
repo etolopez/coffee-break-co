@@ -307,6 +307,7 @@ model Seller {
 
   @@map("sellers")
   @@index([uniqueSlug])
+  @@index([userId])
 }
 
 model Coffee {
