@@ -48,11 +48,12 @@ RUN npm run build
 # Expose port (Railway will set PORT env var)
 EXPOSE 4000
 
-# Copy startup scripts
-COPY apps/api/scripts/start.sh ./apps/api/scripts/start.sh
-COPY apps/api/scripts/migrate.sh ./apps/api/scripts/migrate.sh
-RUN chmod +x ./apps/api/scripts/start.sh ./apps/api/scripts/migrate.sh
+# Copy startup scripts to the correct location
+# We'll be in /app/apps/api when we run, so copy scripts there
+WORKDIR /app/apps/api
+COPY apps/api/scripts/start.sh ./scripts/start.sh
+COPY apps/api/scripts/migrate.sh ./scripts/migrate.sh
+RUN chmod +x ./scripts/start.sh ./scripts/migrate.sh
 
 # Start the application (runs migrations and seeds before starting)
-WORKDIR /app/apps/api
 CMD ["sh", "./scripts/start.sh"]
