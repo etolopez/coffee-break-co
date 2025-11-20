@@ -210,6 +210,63 @@ model ScanEvent {
 }
 
 // ============================================================================
+// USER AUTHENTICATION & PROFILES
+// ============================================================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hashed password
+  name      String?
+  role      String   @default("customer") // customer, seller, admin
+  avatar    String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  profile   UserProfile?
+  favorites UserFavorite[]
+  seller    Seller?  // If user is a seller, link to Seller record
+
+  @@map("users")
+  @@index([email])
+  @@index([role])
+}
+
+model UserProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  bio       String?
+  location  String?
+  website   String?
+  preferences Json?  // User preferences (theme, notifications, etc.)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model UserFavorite {
+  id        String   @id @default(cuid())
+  userId    String
+  coffeeId  String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coffee Coffee @relation(fields: [coffeeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, coffeeId])
+  @@index([userId])
+  @@index([coffeeId])
+  @@map("user_favorites")
+}
+
+// ============================================================================
 // COFFEE DIGITAL PASSPORT MODELS
 // ============================================================================
 
@@ -245,6 +302,7 @@ model Seller {
 
   // Relations
   coffees           Coffee[]
+  user              User?  // Link to User if seller has account
 
   @@map("sellers")
   @@index([uniqueSlug])
@@ -306,6 +364,7 @@ model Coffee {
 
   // Relations
   seller                Seller?   @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  favorites             UserFavorite[]
 
   @@map("coffees")
   @@index([sellerId])
