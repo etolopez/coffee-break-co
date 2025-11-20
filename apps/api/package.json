@@ -64,7 +64,8 @@
     "pg-format": "^1.0.4",
     "pino-std-serializers": "^6.0.0",
     "prisma": "^5.22.0",
-    "rdf-validate-shacl": "^0.1.0"
+    "rdf-validate-shacl": "^0.1.0",
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.3.0",

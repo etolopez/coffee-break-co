@@ -1,5 +1,5 @@
-# Use Node.js 20
-FROM node:20-alpine
+# Use Node.js 20 (Debian-based for better Prisma/OpenSSL compatibility)
+FROM node:20-slim
 
 # Set working directory
 WORKDIR /app
@@ -14,6 +14,12 @@ COPY package.json ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/shared/tsconfig.json ./packages/shared/
 COPY packages/shared/src ./packages/shared/src
+
+# Install system dependencies for Prisma and OpenSSL
+RUN apt-get update && apt-get install -y \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install root dependencies (winston, etc. needed by shared package)
 RUN npm install
