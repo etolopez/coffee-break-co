@@ -12,17 +12,24 @@ const passport_jwt_1 = require("passport-jwt");
 const config_1 = require("@nestjs/config");
 const auth_service_1 = require("../auth.service");
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy, 'jwt') {
-    configService;
     authService;
     constructor(configService, authService) {
-        // Get JWT secret from ConfigService or use default
-        const jwtSecret = configService?.get('JWT_SECRET') || process.env['JWT_SECRET'] || 'your-secret-key-change-in-production';
+        // Get JWT secret - try ConfigService first, then env var, then default
+        let jwtSecret = 'your-secret-key-change-in-production';
+        try {
+            if (configService) {
+                jwtSecret = configService.get('JWT_SECRET') || jwtSecret;
+            }
+        }
+        catch (e) {
+            // Fallback to environment variable
+            jwtSecret = process.env['JWT_SECRET'] || jwtSecret;
+        }
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
             secretOrKey: jwtSecret,
         });
-        this.configService = configService;
         this.authService = authService;
     }
     async validate(payload) {

@@ -12,11 +12,19 @@ import { AuthService } from '../auth.service';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
-    private readonly configService: ConfigService,
+    configService: ConfigService,
     private readonly authService: AuthService,
   ) {
-    // Get JWT secret from ConfigService or use default
-    const jwtSecret = configService?.get<string>('JWT_SECRET') || process.env['JWT_SECRET'] || 'your-secret-key-change-in-production';
+    // Get JWT secret - try ConfigService first, then env var, then default
+    let jwtSecret = 'your-secret-key-change-in-production';
+    try {
+      if (configService) {
+        jwtSecret = configService.get<string>('JWT_SECRET') || jwtSecret;
+      }
+    } catch (e) {
+      // Fallback to environment variable
+      jwtSecret = process.env['JWT_SECRET'] || jwtSecret;
+    }
     
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
