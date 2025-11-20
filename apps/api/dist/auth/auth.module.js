@@ -21,6 +21,7 @@ exports.AuthModule = AuthModule = tslib_1.__decorate([
     (0, common_1.Module)({
         imports: [
             database_module_1.DatabaseModule,
+            config_1.ConfigModule, // Ensure ConfigModule is imported
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],

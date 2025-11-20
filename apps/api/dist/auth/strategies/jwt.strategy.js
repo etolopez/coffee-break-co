@@ -12,7 +12,6 @@ const passport_jwt_1 = require("passport-jwt");
 const config_1 = require("@nestjs/config");
 const auth_service_1 = require("../auth.service");
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
-    configService;
     authService;
     constructor(configService, authService) {
         super({
@@ -20,7 +19,6 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
             ignoreExpiration: false,
             secretOrKey: configService.get('JWT_SECRET') || 'your-secret-key-change-in-production',
         });
-        this.configService = configService;
         this.authService = authService;
     }
     async validate(payload) {

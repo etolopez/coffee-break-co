@@ -15,6 +15,7 @@ import { DatabaseModule } from '../database/database.module';
 @Module({
   imports: [
     DatabaseModule,
+    ConfigModule, // Ensure ConfigModule is imported
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
