@@ -146,11 +146,9 @@ export default function CoffeeDetailScreen() {
       if (isFavorited) {
         await favoritesService.removeFavorite(coffee.id);
         setIsFavorited(false);
-        logger.info('Coffee removed from favorites');
       } else {
         await favoritesService.addFavorite(coffee.id);
         setIsFavorited(true);
-        logger.info('Coffee added to favorites');
       }
     } catch (error) {
       logger.error('Error toggling favorite', error);
