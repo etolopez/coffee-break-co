@@ -20,12 +20,55 @@ let AdminService = AdminService_1 = class AdminService {
      */
     async getDashboardStats() {
         try {
-            const [users, sellers, coffees, favorites] = await Promise.all([
-                this.prisma.user.count(),
-                this.prisma.seller.count(),
-                this.prisma.coffee.count(),
-                this.prisma.userFavorite.count(),
-            ]);
+            this.logger.log('Fetching dashboard statistics...');
+            // Try each query individually to see which one fails
+            let users = 0;
+            let sellers = 0;
+            let coffees = 0;
+            let favorites = 0;
+            try {
+                users = await this.prisma.user.count();
+                this.logger.debug(`Users count: ${users}`);
+            }
+            catch (error) {
+                this.logger.error('Error counting users:', error);
+                throw error;
+            }
+            try {
+                sellers = await this.prisma.seller.count();
+                this.logger.debug(`Sellers count: ${sellers}`);
+            }
+            catch (error) {
+                this.logger.error('Error counting sellers:', error);
+                throw error;
+            }
+            try {
+                coffees = await this.prisma.coffee.count();
+                this.logger.debug(`Coffees count: ${coffees}`);
+            }
+            catch (error) {
+                this.logger.error('Error counting coffees:', error);
+                throw error;
+            }
+            try {
+                favorites = await this.prisma.userFavorite.count();
+                this.logger.debug(`Favorites count: ${favorites}`);
+            }
+            catch (error) {
+                this.logger.error('Error counting favorites:', {
+                    message: error.message,
+                    code: error.code,
+                    meta: error.meta,
+                });
+                // If user_favorites table doesn't exist, set to 0 instead of failing
+                if (error.code === 'P2021' || error.message?.includes('does not exist')) {
+                    this.logger.warn('user_favorites table does not exist, setting count to 0');
+                    favorites = 0;
+                }
+                else {
+                    throw error;
+                }
+            }
             // Get users by role
             // In Prisma groupBy, _count: true returns a number (total count in group)
             const usersByRole = await this.prisma.user.groupBy({

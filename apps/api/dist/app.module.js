@@ -19,6 +19,7 @@ const seller_module_1 = require("./seller/seller.module");
 const comments_module_1 = require("./comments/comments.module");
 const app_controller_1 = require("./app.controller");
 const jwt_auth_guard_1 = require("./auth/guards/jwt-auth.guard");
+const http_exception_filter_1 = require("./common/filters/http-exception.filter");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -45,6 +46,11 @@ exports.AppModule = AppModule = tslib_1.__decorate([
             {
                 provide: core_1.APP_GUARD,
                 useClass: jwt_auth_guard_1.JwtAuthGuard,
+            },
+            // Global exception filter for better error logging
+            {
+                provide: core_1.APP_FILTER,
+                useClass: http_exception_filter_1.AllExceptionsFilter,
             },
         ],
     })
