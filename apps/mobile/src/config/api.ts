@@ -66,12 +66,12 @@ export const API_ENDPOINTS = {
   // Seller endpoints
   SELLERS: '/api/sellers',
   SELLER_BY_ID: (id: string) => `/api/sellers/${id}`,
-  SELLER_COFFEES: (sellerId: string) => `/api/sellers/${sellerId}/coffees`,
+  SELLER_COFFEES_BY_SELLER_ID: (sellerId: string) => `/api/sellers/${sellerId}/coffees`,
   
   // Comments/Ratings
   COMMENTS: (coffeeId: string) => `/api/comments?coffeeId=${coffeeId}`,
   
-  // Seller coffee management
+  // Seller coffee management (for authenticated sellers)
   SELLER_COFFEES: '/api/seller/coffees',
   SELLER_COFFEE_BY_ID: (id: string) => `/api/seller/coffees/${id}`,
   
