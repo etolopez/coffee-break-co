@@ -54,4 +54,4 @@ RUN chmod +x ./apps/api/scripts/start.sh
 
 # Start the application (runs migrations and seeds before starting)
 WORKDIR /app/apps/api
-CMD ["./scripts/start.sh"]
+CMD ["sh", "./scripts/start.sh"]
