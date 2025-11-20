@@ -50,6 +50,10 @@ let PrismaService = PrismaService_1 = class PrismaService extends client_1.Prism
             if (!usersTableExists) {
                 this.logger.warn('⚠️  Could not ensure users table exists - authentication may not work');
             }
+            else {
+                // If table exists, also ensure demo users exist (in case seeding didn't run)
+                await (0, ensure_users_table_1.ensureDemoUsers)(this);
+            }
         }
         catch (error) {
             const nodeEnv = process.env['NODE_ENV'] || 'development';

@@ -5,6 +5,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { Logger } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 const logger = new Logger('EnsureUsersTable');
 
@@ -117,6 +118,10 @@ export async function ensureUsersTable(prisma: PrismaClient): Promise<boolean> {
         `);
 
         logger.log('✅ Users tables created successfully!');
+        
+        // Now ensure demo users exist
+        await ensureDemoUsers(prisma);
+        
         return true;
       } catch (createError: any) {
         logger.error('❌ Failed to create users table', createError);
@@ -127,5 +132,76 @@ export async function ensureUsersTable(prisma: PrismaClient): Promise<boolean> {
       return false;
     }
   }
+}
+
+/**
+ * Ensure demo users exist in the database
+ * Creates them if they don't exist
+ */
+export async function ensureDemoUsers(prisma: PrismaClient): Promise<void> {
+  const demoUsers = [
+    // Admin
+    {
+      email: 'admin@coffeebreak.com',
+      password: 'password',
+      name: 'Admin User',
+      role: 'admin',
+    },
+    // Sellers
+    {
+      email: 'seller@coffeebreak.com',
+      password: 'password',
+      name: 'Free Tier Seller',
+      role: 'seller',
+    },
+    // Customers
+    {
+      email: 'customer@example.com',
+      password: 'password',
+      name: 'Demo Customer',
+      role: 'customer',
+    },
+  ];
+
+  logger.log('👤 Ensuring demo users exist...');
+
+  for (const userData of demoUsers) {
+    try {
+      // Check if user exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: userData.email },
+      });
+
+      if (existingUser) {
+        logger.debug(`  ✅ User already exists: ${userData.email}`);
+        continue;
+      }
+
+      // Create user
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      await prisma.user.create({
+        data: {
+          email: userData.email,
+          password: hashedPassword,
+          name: userData.name,
+          role: userData.role,
+          profile: {
+            create: {},
+          },
+        },
+      });
+
+      logger.log(`  ✅ Created demo user: ${userData.email} (${userData.role})`);
+    } catch (error: any) {
+      // Ignore duplicate errors
+      if (error.code === 'P2002') {
+        logger.debug(`  ⚠️  User already exists: ${userData.email}`);
+      } else {
+        logger.warn(`  ⚠️  Failed to create user ${userData.email}:`, error.message);
+      }
+    }
+  }
+
+  logger.log('✅ Demo users ensured');
 }
 

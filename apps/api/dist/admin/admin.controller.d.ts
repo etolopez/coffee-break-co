@@ -18,10 +18,10 @@ export declare class AdminController {
             count: number;
         }[];
         recentUsers: {
+            id: string;
             email: string;
             name: string | null;
             role: string;
-            id: string;
             createdAt: Date;
         }[];
         recentCoffees: {
@@ -51,11 +51,11 @@ export declare class AdminController {
             favorites: number;
         };
     } & {
-        email: string;
         password: string;
+        id: string;
+        email: string;
         name: string | null;
         role: string;
-        id: string;
         avatar: string | null;
         phone: string | null;
         createdAt: Date;
@@ -63,16 +63,16 @@ export declare class AdminController {
     })[]>;
     getAllSellers(): Promise<({
         user: {
+            id: string;
             email: string;
             name: string | null;
-            id: string;
         } | null;
         _count: {
             coffees: number;
         };
     } & {
-        email: string | null;
         id: string;
+        email: string | null;
         phone: string | null;
         createdAt: Date;
         updatedAt: Date;

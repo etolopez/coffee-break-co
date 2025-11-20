@@ -22,10 +22,10 @@ export declare class UsersService {
      * Get user profile
      */
     getProfile(userId: string): Promise<{
+        id: string;
         email: string;
         name: string | null;
         role: string;
-        id: string;
         avatar: string | null;
         phone: string | null;
         createdAt: Date;
@@ -46,10 +46,10 @@ export declare class UsersService {
      * Update user profile
      */
     updateProfile(userId: string, updateDto: UpdateProfileDto): Promise<{
+        id: string;
         email: string;
         name: string | null;
         role: string;
-        id: string;
         avatar: string | null;
         phone: string | null;
         profile: {

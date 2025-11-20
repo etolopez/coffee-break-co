@@ -7,10 +7,10 @@ export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
     getProfile(user: any): Promise<{
+        id: string;
         email: string;
         name: string | null;
         role: string;
-        id: string;
         avatar: string | null;
         phone: string | null;
         createdAt: Date;
@@ -28,10 +28,10 @@ export declare class UsersController {
         }[];
     }>;
     updateProfile(user: any, updateDto: UpdateProfileDto): Promise<{
+        id: string;
         email: string;
         name: string | null;
         role: string;
-        id: string;
         avatar: string | null;
         phone: string | null;
         profile: {

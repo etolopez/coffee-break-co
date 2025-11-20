@@ -6,7 +6,7 @@
 
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { ensureUsersTable } from './ensure-users-table';
+import { ensureUsersTable, ensureDemoUsers } from './ensure-users-table';
 
 /**
  * Prisma Service
@@ -50,6 +50,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       const usersTableExists = await ensureUsersTable(this);
       if (!usersTableExists) {
         this.logger.warn('⚠️  Could not ensure users table exists - authentication may not work');
+      } else {
+        // If table exists, also ensure demo users exist (in case seeding didn't run)
+        await ensureDemoUsers(this);
       }
     } catch (error: any) {
       const nodeEnv = process.env['NODE_ENV'] || 'development';

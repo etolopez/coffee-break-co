@@ -5,7 +5,10 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ensureUsersTable = ensureUsersTable;
+exports.ensureDemoUsers = ensureDemoUsers;
+const tslib_1 = require("tslib");
 const common_1 = require("@nestjs/common");
+const bcrypt = tslib_1.__importStar(require("bcrypt"));
 const logger = new common_1.Logger('EnsureUsersTable');
 async function ensureUsersTable(prisma) {
     try {
@@ -105,6 +108,8 @@ async function ensureUsersTable(prisma) {
           END $$;
         `);
                 logger.log('✅ Users tables created successfully!');
+                // Now ensure demo users exist
+                await ensureDemoUsers(prisma);
                 return true;
             }
             catch (createError) {
@@ -117,5 +122,71 @@ async function ensureUsersTable(prisma) {
             return false;
         }
     }
+}
+/**
+ * Ensure demo users exist in the database
+ * Creates them if they don't exist
+ */
+async function ensureDemoUsers(prisma) {
+    const demoUsers = [
+        // Admin
+        {
+            email: 'admin@coffeebreak.com',
+            password: 'password',
+            name: 'Admin User',
+            role: 'admin',
+        },
+        // Sellers
+        {
+            email: 'seller@coffeebreak.com',
+            password: 'password',
+            name: 'Free Tier Seller',
+            role: 'seller',
+        },
+        // Customers
+        {
+            email: 'customer@example.com',
+            password: 'password',
+            name: 'Demo Customer',
+            role: 'customer',
+        },
+    ];
+    logger.log('👤 Ensuring demo users exist...');
+    for (const userData of demoUsers) {
+        try {
+            // Check if user exists
+            const existingUser = await prisma.user.findUnique({
+                where: { email: userData.email },
+            });
+            if (existingUser) {
+                logger.debug(`  ✅ User already exists: ${userData.email}`);
+                continue;
+            }
+            // Create user
+            const hashedPassword = await bcrypt.hash(userData.password, 10);
+            await prisma.user.create({
+                data: {
+                    email: userData.email,
+                    password: hashedPassword,
+                    name: userData.name,
+                    role: userData.role,
+                    profile: {
+                        create: {},
+                    },
+                },
+            });
+            logger.log(`  ✅ Created demo user: ${userData.email} (${userData.role})`);
+        }
+        catch (error) {
+            // Ignore duplicate errors
+            if (error.code === 'P2002') {
+                logger.debug(`  ⚠️  User already exists: ${userData.email}`);
+            }
+            else {
+                logger.warn(`  ⚠️  Failed to create user ${userData.email}:`, error.message);
+            }
+        }
+    }
+    logger.log('✅ Demo users ensured');
 }
 //# sourceMappingURL=ensure-users-table.js.map
