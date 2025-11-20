@@ -12,6 +12,7 @@ const passport_jwt_1 = require("passport-jwt");
 const config_1 = require("@nestjs/config");
 const auth_service_1 = require("../auth.service");
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
+    configService;
     authService;
     constructor(configService, authService) {
         super({
@@ -19,6 +20,7 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
             ignoreExpiration: false,
             secretOrKey: configService.get('JWT_SECRET') || 'your-secret-key-change-in-production',
         });
+        this.configService = configService;
         this.authService = authService;
     }
     async validate(payload) {
@@ -32,6 +34,7 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
 exports.JwtStrategy = JwtStrategy;
 exports.JwtStrategy = JwtStrategy = tslib_1.__decorate([
     (0, common_1.Injectable)(),
+    tslib_1.__param(0, (0, common_1.Inject)(config_1.ConfigService)),
     tslib_1.__metadata("design:paramtypes", [config_1.ConfigService,
         auth_service_1.AuthService])
 ], JwtStrategy);
