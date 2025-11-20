@@ -18,6 +18,7 @@ import { colors, typography, spacing, borderRadius } from '../../config/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { coffeeService } from '../../services/api';
 import { CoffeeEntry } from '../../types';
+import { logger } from '../../utils/logger';
 
 export default function CoffeeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -30,10 +31,28 @@ export default function CoffeeDetailScreen() {
   useEffect(() => {
     const fetchCoffee = async () => {
       try {
-        const data = await coffeeService.getCoffeeById(id);
+        // Try to fetch by ID first, then by slug if that fails
+        // IDs are typically CUIDs (long alphanumeric strings)
+        // Slugs are typically shorter, URL-friendly strings
+        let data: CoffeeEntry | null = null;
+        
+        // Check if it looks like an ID (CUID format: starts with 'c' and is long)
+        // or try ID first, then slug as fallback
+        try {
+          data = await coffeeService.getCoffeeById(id);
+        } catch (idError) {
+          // If ID lookup fails, try slug
+          try {
+            data = await coffeeService.getCoffeeBySlug(id);
+          } catch (slugError) {
+            logger.error('Error fetching coffee by both ID and slug', { id, idError, slugError });
+            throw slugError; // Throw the slug error as final error
+          }
+        }
+        
         setCoffee(data);
       } catch (error) {
-        console.error('Error fetching coffee:', error);
+        logger.error('Error fetching coffee', error);
       } finally {
         setLoading(false);
       }
@@ -113,11 +132,37 @@ export default function CoffeeDetailScreen() {
           </View>
         )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Farm Information</Text>
-          <Text style={styles.infoText}>Farm: {coffee.farm}</Text>
-          <Text style={styles.infoText}>Farmer: {coffee.farmer}</Text>
-        </View>
+        {(coffee.farm || coffee.farmer) && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Farm Information</Text>
+            {coffee.farm && (
+              <Text style={styles.infoText}>Farm: {coffee.farm}</Text>
+            )}
+            {coffee.farmer && (
+              <Text style={styles.infoText}>Farmer: {coffee.farmer}</Text>
+            )}
+          </View>
+        )}
+
+        {coffee.description && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Description</Text>
+            <Text style={styles.notes}>{coffee.description}</Text>
+          </View>
+        )}
+
+        {coffee.flavorNotes && coffee.flavorNotes.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Flavor Notes</Text>
+            <View style={styles.certificationsContainer}>
+              {coffee.flavorNotes.map((note, index) => (
+                <View key={index} style={styles.certificationBadge}>
+                  <Text style={styles.certificationText}>{note}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
       </View>
     </ScrollView>
   );
