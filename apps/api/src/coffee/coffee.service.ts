@@ -93,7 +93,7 @@ export class CoffeeService {
    * Map Prisma Coffee model to CoffeeEntry interface
    * Converts database model to API response format
    */
-  private mapCoffeeToEntry(coffee: Coffee): CoffeeEntry {
+  mapCoffeeToEntry(coffee: Coffee): CoffeeEntry {
     const baseEntry = {
       id: coffee.id,
       coffeeName: coffee.coffeeName,

@@ -13,6 +13,7 @@ export class SellerController {
   constructor(private readonly sellerService: SellerService) {}
 
   @Get()
+  @Public() // Make seller listings public
   @ApiOperation({
     summary: 'Get all sellers',
     description: 'Retrieve all sellers with their coffee data',

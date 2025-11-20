@@ -32,6 +32,7 @@ export class CoffeeController {
   }
 
   @Get(':id')
+  @Public() // Make coffee details public
   @ApiOperation({
     summary: 'Get coffee by ID',
     description: 'Retrieve a specific coffee entry by its ID',
@@ -57,6 +58,7 @@ export class CoffeeController {
   }
 
   @Get('slug/:slug')
+  @Public() // Make coffee details by slug public
   @ApiOperation({
     summary: 'Get coffee by slug',
     description: 'Retrieve a specific coffee entry by its slug',
