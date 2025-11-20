@@ -52,7 +52,6 @@ export default function AdminSellersScreen() {
       setLoading(true);
       const data = await adminSellerService.getAllSellers();
       setSellers(data);
-      logger.info('Admin sellers loaded successfully');
     } catch (error: any) {
       logger.error('Error loading sellers', error);
       Alert.alert('Error', 'Failed to load sellers. Please try again.');
@@ -85,7 +84,6 @@ export default function AdminSellersScreen() {
           onPress: async () => {
             try {
               await adminSellerService.deleteSeller(seller.id);
-              logger.info(`Seller deleted: ${seller.id}`);
               loadSellers();
             } catch (error: any) {
               logger.error('Error deleting seller', error);

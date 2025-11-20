@@ -62,7 +62,6 @@ export default function AdminScreen() {
       setLoading(true);
       const data = await adminService.getDashboardStats();
       setStats(data);
-      logger.info('Admin dashboard stats loaded successfully');
     } catch (error: any) {
       logger.error('Error loading admin stats', error);
       // Check if it's an authorization error

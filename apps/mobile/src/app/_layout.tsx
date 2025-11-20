@@ -16,7 +16,6 @@ import { logger } from '../utils/logger';
  */
 if (__DEV__) {
   // Log app startup
-  logger.info('Coffee Break App Starting');
   
   // Catch unhandled promise rejections
   const originalHandler = global.ErrorUtils?.getGlobalHandler?.();

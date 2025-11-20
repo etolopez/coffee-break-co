@@ -51,7 +51,6 @@ export default function CoffeeDetailScreen() {
             data = await coffeeService.getCoffeeById(id);
           } catch (idError) {
             // If ID fails, try slug as fallback
-            logger.debug('ID lookup failed, trying slug', { id });
             try {
               data = await coffeeService.getCoffeeBySlug(id);
             } catch (slugError) {
@@ -65,7 +64,6 @@ export default function CoffeeDetailScreen() {
             data = await coffeeService.getCoffeeBySlug(id);
           } catch (slugError) {
             // If slug fails, try ID as fallback
-            logger.debug('Slug lookup failed, trying ID', { id });
             try {
               data = await coffeeService.getCoffeeById(id);
             } catch (idError) {

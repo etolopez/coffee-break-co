@@ -52,7 +52,6 @@ export default function SellerDashboardScreen() {
       setLoading(true);
       const data = await sellerCoffeeService.getMyCoffees();
       setCoffees(data);
-      logger.info('Seller coffees loaded successfully');
     } catch (error: any) {
       logger.error('Error loading seller coffees', error);
       Alert.alert('Error', 'Failed to load coffees. Please try again.');
@@ -85,7 +84,6 @@ export default function SellerDashboardScreen() {
           onPress: async () => {
             try {
               await sellerCoffeeService.deleteCoffee(coffee.id);
-              logger.info(`Coffee deleted: ${coffee.id}`);
               loadCoffees();
             } catch (error: any) {
               logger.error('Error deleting coffee', error);
