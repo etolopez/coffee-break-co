@@ -21,9 +21,21 @@ const getApiBaseUrl = (): string => {
   const envUrl = process.env.EXPO_PUBLIC_API_URL;
   if (envUrl) return envUrl;
   
-  // Priority 2: In development, always use localhost (ignore app.json Railway URL)
+  // Priority 2: Production - use Railway URL from app.json
+  const configUrl = Constants.expoConfig?.extra?.apiUrl;
+  if (configUrl) return configUrl;
+  
+  // Priority 3: In development, try localhost first, fallback to Railway
   // NOTE: Using NestJS backend on port 4000 (standalone API server)
   if (__DEV__) {
+    // Check if we should use Railway URL even in dev (when local backend isn't running)
+    // For now, use Railway URL since local backend may not be running
+    const railwayUrl = Constants.expoConfig?.extra?.apiUrl;
+    if (railwayUrl) {
+      return railwayUrl;
+    }
+    
+    // Fallback to localhost if Railway URL not configured
     // Android emulator needs special IP to access host machine
     if (Platform.OS === 'android') {
       return 'http://10.0.2.2:4000';
@@ -36,12 +48,8 @@ const getApiBaseUrl = (): string => {
     return 'http://localhost:4000';
   }
   
-  // Priority 3: Production - use Railway URL from app.json
-  const configUrl = Constants.expoConfig?.extra?.apiUrl;
-  if (configUrl) return configUrl;
-  
   // Fallback - should not happen in production
-  return 'http://localhost:4000';
+  return 'https://coffee-break-co-production.up.railway.app';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
