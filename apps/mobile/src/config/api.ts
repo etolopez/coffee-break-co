@@ -80,6 +80,14 @@ export const API_ENDPOINTS = {
   // Comments/Ratings
   COMMENTS: (coffeeId: string) => `/api/comments?coffeeId=${coffeeId}`,
   
+  // Seller coffee management
+  SELLER_COFFEES: '/api/seller/coffees',
+  SELLER_COFFEE_BY_ID: (id: string) => `/api/seller/coffees/${id}`,
+  
+  // Admin seller management
+  ADMIN_SELLERS: '/api/admin/sellers',
+  ADMIN_SELLER_BY_ID: (id: string) => `/api/admin/sellers/${id}`,
+  
   // Health check
   HEALTH: '/health',
 } as const;

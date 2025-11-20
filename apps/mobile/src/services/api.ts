@@ -338,6 +338,142 @@ export const favoritesService = {
 };
 
 /**
+ * Seller Coffee API Service
+ * Handles seller coffee management (CRUD operations)
+ */
+export const sellerCoffeeService = {
+  /**
+   * Get all coffees for the current seller
+   */
+  async getMyCoffees(): Promise<CoffeeEntry[]> {
+    try {
+      const url = buildApiUrl(API_ENDPOINTS.SELLER_COFFEES);
+      const response = await apiClient.get<CoffeeEntry[]>(url);
+      return response.data;
+    } catch (error) {
+      logger.error('Error fetching seller coffees', error);
+      logApiError(API_ENDPOINTS.SELLER_COFFEES, 'GET', error as AxiosError);
+      throw new Error(handleApiError(error as AxiosError));
+    }
+  },
+
+  /**
+   * Get a specific coffee by ID
+   */
+  async getCoffeeById(id: string): Promise<CoffeeEntry> {
+    try {
+      const url = buildApiUrl(API_ENDPOINTS.SELLER_COFFEE_BY_ID(id));
+      const response = await apiClient.get<CoffeeEntry>(url);
+      return response.data;
+    } catch (error) {
+      logger.error(`Error fetching seller coffee ${id}`, error);
+      logApiError(API_ENDPOINTS.SELLER_COFFEE_BY_ID(id), 'GET', error as AxiosError);
+      throw new Error(handleApiError(error as AxiosError));
+    }
+  },
+
+  /**
+   * Create a new coffee
+   */
+  async createCoffee(coffeeData: Partial<CoffeeEntry>): Promise<CoffeeEntry> {
+    try {
+      const url = buildApiUrl(API_ENDPOINTS.SELLER_COFFEES);
+      const response = await apiClient.post<CoffeeEntry>(url, coffeeData);
+      return response.data;
+    } catch (error) {
+      logger.error('Error creating coffee', error);
+      logApiError(API_ENDPOINTS.SELLER_COFFEES, 'POST', error as AxiosError);
+      throw new Error(handleApiError(error as AxiosError));
+    }
+  },
+
+  /**
+   * Update a coffee
+   */
+  async updateCoffee(id: string, coffeeData: Partial<CoffeeEntry>): Promise<CoffeeEntry> {
+    try {
+      const url = buildApiUrl(API_ENDPOINTS.SELLER_COFFEE_BY_ID(id));
+      const response = await apiClient.put<CoffeeEntry>(url, coffeeData);
+      return response.data;
+    } catch (error) {
+      logger.error(`Error updating coffee ${id}`, error);
+      logApiError(API_ENDPOINTS.SELLER_COFFEE_BY_ID(id), 'PUT', error as AxiosError);
+      throw new Error(handleApiError(error as AxiosError));
+    }
+  },
+
+  /**
+   * Delete a coffee
+   */
+  async deleteCoffee(id: string): Promise<void> {
+    try {
+      const url = buildApiUrl(API_ENDPOINTS.SELLER_COFFEE_BY_ID(id));
+      await apiClient.delete(url);
+    } catch (error) {
+      logger.error(`Error deleting coffee ${id}`, error);
+      logApiError(API_ENDPOINTS.SELLER_COFFEE_BY_ID(id), 'DELETE', error as AxiosError);
+      throw new Error(handleApiError(error as AxiosError));
+    }
+  },
+};
+
+/**
+ * Admin Seller API Service
+ * Handles admin seller management
+ */
+export const adminSellerService = {
+  /**
+   * Get all sellers (admin only)
+   */
+  async getAllSellers(): Promise<Seller[]> {
+    try {
+      const url = buildApiUrl(API_ENDPOINTS.ADMIN_SELLERS);
+      const response = await apiClient.get<ApiResponse<Seller[]>>(url);
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+      return [];
+    } catch (error) {
+      logger.error('Error fetching sellers', error);
+      logApiError(API_ENDPOINTS.ADMIN_SELLERS, 'GET', error as AxiosError);
+      throw new Error(handleApiError(error as AxiosError));
+    }
+  },
+
+  /**
+   * Update a seller
+   */
+  async updateSeller(id: string, sellerData: Partial<Seller>): Promise<Seller> {
+    try {
+      const url = buildApiUrl(API_ENDPOINTS.ADMIN_SELLER_BY_ID(id));
+      const response = await apiClient.put<ApiResponse<Seller>>(url, sellerData);
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+      throw new Error('Failed to update seller');
+    } catch (error) {
+      logger.error(`Error updating seller ${id}`, error);
+      logApiError(API_ENDPOINTS.ADMIN_SELLER_BY_ID(id), 'PUT', error as AxiosError);
+      throw new Error(handleApiError(error as AxiosError));
+    }
+  },
+
+  /**
+   * Delete a seller
+   */
+  async deleteSeller(id: string): Promise<void> {
+    try {
+      const url = buildApiUrl(API_ENDPOINTS.ADMIN_SELLER_BY_ID(id));
+      await apiClient.delete(url);
+    } catch (error) {
+      logger.error(`Error deleting seller ${id}`, error);
+      logApiError(API_ENDPOINTS.ADMIN_SELLER_BY_ID(id), 'DELETE', error as AxiosError);
+      throw new Error(handleApiError(error as AxiosError));
+    }
+  },
+};
+
+/**
  * Health check service
  */
 export const healthService = {

@@ -40,14 +40,37 @@ export default function HomeScreen() {
       {/* Header with Auth */}
       <View style={styles.header}>
         {isAuthenticated && user ? (
-          <TouchableOpacity
-            style={styles.profileButton}
-            onPress={() => router.push('/profile')}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="person-circle" size={32} color={colors.primary[600]} />
-            <Text style={styles.profileText}>{user.name || user.email}</Text>
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            {/* Role-based buttons */}
+            {(user.role === 'seller' || user.role === 'admin') && (
+              <TouchableOpacity
+                style={styles.roleButton}
+                onPress={() => router.push('/seller-dashboard')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="storefront" size={20} color={colors.primary[600]} />
+                <Text style={styles.roleButtonText}>Dashboard</Text>
+              </TouchableOpacity>
+            )}
+            {user.role === 'admin' && (
+              <TouchableOpacity
+                style={styles.roleButton}
+                onPress={() => router.push('/admin')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="shield" size={20} color={colors.primary[600]} />
+                <Text style={styles.roleButtonText}>Admin</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={styles.profileButton}
+              onPress={() => router.push('/profile')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="person-circle" size={32} color={colors.primary[600]} />
+              <Text style={styles.profileText}>{user.name || user.email}</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <View style={styles.authButtons}>
             <TouchableOpacity
@@ -237,6 +260,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  roleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primary[50],
+    borderWidth: 1,
+    borderColor: colors.primary[200],
+  },
+  roleButtonText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.primary[700],
   },
   profileButton: {
     flexDirection: 'row',
