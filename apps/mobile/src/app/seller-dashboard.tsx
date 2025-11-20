@@ -167,7 +167,7 @@ export default function SellerDashboardScreen() {
       >
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => router.push('/seller/coffee/new')}
+          onPress={() => router.push('/seller/coffees/new')}
           activeOpacity={0.8}
         >
           <Ionicons name="add-circle" size={24} color={colors.neutral.white} />
@@ -207,7 +207,7 @@ export default function SellerDashboardScreen() {
               <View style={styles.coffeeActions}>
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={() => router.push(`/seller/coffee/${coffee.id}`)}
+                  onPress={() => router.push(`/seller/coffees/${coffee.id}`)}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="pencil" size={20} color={colors.primary[600]} />
