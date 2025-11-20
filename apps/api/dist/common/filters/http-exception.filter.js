@@ -17,7 +17,9 @@ let AllExceptionsFilter = class AllExceptionsFilter {
             ? exception.getStatus()
             : common_1.HttpStatus.INTERNAL_SERVER_ERROR;
         const message = exception instanceof common_1.HttpException
-            ? exception.getMessage()
+            ? (typeof exception.getResponse() === 'string'
+                ? exception.getResponse()
+                : exception.getResponse()?.message || exception.message)
             : exception instanceof Error
                 ? exception.message
                 : 'Internal server error';
