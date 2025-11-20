@@ -6,7 +6,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
-import { Seller as PrismaSeller } from '@prisma/client';
+import { Seller as PrismaSeller, Prisma } from '@prisma/client';
 
 /**
  * Seller interface matching the API response structure
@@ -137,28 +137,49 @@ export class SellerService {
 
   /**
    * Get all sellers with coffee data
+   * Handles missing userId column gracefully if migration hasn't been applied
    */
   async getAllSellers(): Promise<Seller[]> {
     try {
-      // Fetch sellers - include userId if migration has been applied
+      // Try to fetch sellers normally first
       const sellers = await this.prisma.seller.findMany({
         orderBy: { createdAt: 'desc' },
       });
 
       return Promise.all(sellers.map(seller => this.mapSellerToResponse(seller)));
     } catch (error: any) {
+      // Check if error is due to missing userId column
+      if (error?.message?.includes('sellers.userId') || error?.message?.includes('does not exist')) {
+        this.logger.warn('userId column not found - using fallback query without userId');
+        
+        // Fallback: Use raw SQL query that doesn't include userId
+        try {
+          const sellers = await this.prisma.$queryRaw<PrismaSeller[]>`
+            SELECT 
+              id, "companyName", "companySize", mission, logo, phone, email, 
+              location, country, city, rating, "totalCoffees", "memberSince", 
+              specialties, "featuredCoffeeId", description, website, instagram, 
+              facebook, twitter, certifications, "uniqueSlug", "subscriptionTier", 
+              "subscriptionStatus", "defaultPricePerBag", "orderLink", 
+              "createdAt", "updatedAt"
+            FROM sellers
+            ORDER BY "createdAt" DESC
+          `;
+
+          return Promise.all(sellers.map(seller => this.mapSellerToResponse(seller)));
+        } catch (fallbackError: any) {
+          this.logger.error('Fallback query also failed', fallbackError);
+          throw new Error('Failed to fetch sellers. Database migration may not have been applied. Please check Railway logs.');
+        }
+      }
+      
+      // For other errors, log and rethrow
       this.logger.error('Error fetching sellers from database', error);
       this.logger.error('Error details:', {
         message: error?.message,
         code: error?.code,
         meta: error?.meta,
       });
-      
-      // If it's a Prisma error about missing column, provide helpful message
-      if (error?.code === 'P2021' || error?.message?.includes('does not exist')) {
-        this.logger.error('Database schema mismatch - migration may not have been applied');
-        this.logger.error('Please check Railway logs for migration status');
-      }
       
       throw error;
     }

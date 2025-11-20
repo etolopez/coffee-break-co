@@ -48,6 +48,7 @@ export declare class SellerService {
     private mapSellerToResponse;
     /**
      * Get all sellers with coffee data
+     * Handles missing userId column gracefully if migration hasn't been applied
      */
     getAllSellers(): Promise<Seller[]>;
     /**
