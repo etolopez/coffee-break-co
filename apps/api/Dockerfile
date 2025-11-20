@@ -59,7 +59,8 @@ EXPOSE 4000
 WORKDIR /app/apps/api
 COPY apps/api/scripts/start.sh ./scripts/start.sh
 COPY apps/api/scripts/migrate.sh ./scripts/migrate.sh
-RUN chmod +x ./scripts/start.sh ./scripts/migrate.sh
+COPY apps/api/scripts/ensure_users_table.sh ./scripts/ensure_users_table.sh
+RUN chmod +x ./scripts/start.sh ./scripts/migrate.sh ./scripts/ensure_users_table.sh
 
 # Start the application (runs migrations and seeds before starting)
 CMD ["sh", "./scripts/start.sh"]

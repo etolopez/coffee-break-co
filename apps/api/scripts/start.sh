@@ -64,10 +64,17 @@ if [ $MIGRATION_EXIT -ne 0 ]; then
   USERS_TABLE_EXISTS=$?
   if [ $USERS_TABLE_EXISTS -ne 0 ]; then
     echo "❌ CRITICAL: Users table does not exist and migrations failed!"
-    echo "📝 This means authentication will not work."
-    echo "📝 Please check Railway logs above for migration errors."
-    echo "📝 You may need to manually run migrations via Railway Shell."
-    # Don't exit - let the app start so we can see other errors
+    echo "🔧 Attempting emergency fix: running ensure_users_table.sh..."
+    sh ./scripts/ensure_users_table.sh
+    EMERGENCY_FIX_EXIT=$?
+    if [ $EMERGENCY_FIX_EXIT -eq 0 ]; then
+      echo "✅ Emergency fix succeeded - users table created!"
+    else
+      echo "❌ Emergency fix also failed!"
+      echo "📝 This means authentication will not work."
+      echo "📝 Please check Railway logs above for migration errors."
+      echo "📝 You may need to manually run migrations via Railway Shell."
+    fi
   else
     echo "✅ Users table exists - migrations may have already been applied"
   fi
