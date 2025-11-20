@@ -31,11 +31,46 @@ echo "✅ DATABASE_URL is set (length: ${#DATABASE_URL} characters)"
 # Run database migrations FIRST (before regenerating Prisma Client)
 # This ensures the database schema matches what Prisma Client expects
 echo "🔄 Running database migrations..."
-npm run prisma:deploy
+echo "📂 Checking migration files..."
+ls -la prisma/migrations/ || echo "⚠️  Could not list migrations directory"
+
+# Run migrations with verbose output
+npm run prisma:deploy 2>&1 | tee /tmp/migration.log
 MIGRATION_EXIT=$?
+
 if [ $MIGRATION_EXIT -ne 0 ]; then
-  echo "⚠️  Migration failed or already applied (exit code: $MIGRATION_EXIT)"
-  echo "📝 This might be OK if migrations already ran, but check logs above for errors"
+  echo "⚠️  Migration command exited with code: $MIGRATION_EXIT"
+  echo "📝 Migration output:"
+  cat /tmp/migration.log || echo "Could not read migration log"
+  echo ""
+  echo "🔄 Attempting to verify if users table exists..."
+  
+  # Try to check if users table exists using Prisma
+  node -e "
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    prisma.\$queryRaw\`SELECT 1 FROM users LIMIT 1\`
+      .then(() => {
+        console.log('✅ Users table exists');
+        process.exit(0);
+      })
+      .catch((err) => {
+        console.error('❌ Users table does NOT exist:', err.message);
+        process.exit(1);
+      })
+      .finally(() => prisma.\$disconnect());
+  " 2>&1
+  
+  USERS_TABLE_EXISTS=$?
+  if [ $USERS_TABLE_EXISTS -ne 0 ]; then
+    echo "❌ CRITICAL: Users table does not exist and migrations failed!"
+    echo "📝 This means authentication will not work."
+    echo "📝 Please check Railway logs above for migration errors."
+    echo "📝 You may need to manually run migrations via Railway Shell."
+    # Don't exit - let the app start so we can see other errors
+  else
+    echo "✅ Users table exists - migrations may have already been applied"
+  fi
 else
   echo "✅ Migrations applied successfully"
 fi
