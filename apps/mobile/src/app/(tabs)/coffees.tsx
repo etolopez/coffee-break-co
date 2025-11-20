@@ -22,6 +22,7 @@ import { colors, typography, spacing, borderRadius, shadows } from '../../config
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { coffeeService } from '../../services/api';
 import { CoffeeEntry, CoffeeRating } from '../../types';
+import { logger } from '../../utils/logger';
 
 /**
  * Coffees Screen Component
@@ -60,7 +61,7 @@ export default function CoffeesScreen() {
       });
       setRatings(ratingsMap);
     } catch (error: any) {
-      console.error('Error fetching coffees:', error);
+      logger.error('Error fetching coffees in CoffeesScreen', error);
       // Don't throw - just log and show empty state
       // This allows the UI to still render even if API is unavailable
     } finally {

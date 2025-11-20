@@ -7,6 +7,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { buildApiUrl, API_ENDPOINTS } from '../config/api';
 import { ApiResponse, CoffeeEntry, Seller, CoffeeRating } from '../types';
+import { logger, logApiError, logNetworkError } from '../utils/logger';
 
 /**
  * Create axios instance with default configuration
@@ -21,14 +22,18 @@ const apiClient: AxiosInstance = axios.create({
 // Add request interceptor for debugging
 apiClient.interceptors.request.use(
   (config) => {
-    if (__DEV__) {
-      console.log('📡 API Request:', config.method?.toUpperCase(), config.url);
-      console.log('🔗 Full URL:', config.baseURL || '', config.url);
-    }
+    const fullUrl = buildApiUrl(config.url || '');
+    logger.info(`API Request: ${config.method?.toUpperCase()} ${fullUrl}`);
+    logger.debug('Request Config:', {
+      method: config.method,
+      url: config.url,
+      baseURL: config.baseURL,
+      headers: config.headers,
+    });
     return config;
   },
   (error) => {
-    console.error('❌ Request Error:', error);
+    logger.error('Request Setup Error', error);
     return Promise.reject(error);
   }
 );
@@ -36,30 +41,40 @@ apiClient.interceptors.request.use(
 // Add response interceptor for debugging
 apiClient.interceptors.response.use(
   (response) => {
-    if (__DEV__) {
-      console.log('✅ API Response:', response.status, response.config.url);
-    }
+    logger.info(`API Response: ${response.status} ${response.config.url || response.config.method}`);
+    logger.debug('Response Data:', response.data);
     return response;
   },
-  (error) => {
-    if (__DEV__) {
-      console.error('❌ API Error:', error.message);
-      console.error('❌ Error URL:', error.config?.url);
-      console.error('❌ Error Code:', error.code);
-      console.error('❌ Error Request:', {
-        method: error.config?.method,
-        url: error.config?.url,
-        baseURL: error.config?.baseURL,
+  (error: AxiosError) => {
+    const url = error.config?.url || 'unknown';
+    const method = error.config?.method || 'unknown';
+    
+    // Always log errors (not just in __DEV__) for Android visibility
+    if (error.response) {
+      // Server responded with error
+      logApiError(url, method, error);
+      logger.error(`API Error Response: ${error.response.status}`, error, {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+        headers: error.response.headers,
+      });
+    } else if (error.request) {
+      // Request made but no response
+      logNetworkError(url, error);
+      logger.error('Network Error: No response received', error, {
+        code: error.code,
+        message: error.message,
         timeout: error.config?.timeout,
       });
-      if (error.request) {
-        console.error('❌ Request made but no response:', error.request);
-      }
-      if (error.response) {
-        console.error('❌ Response status:', error.response.status);
-        console.error('❌ Response data:', error.response.data);
-      }
+    } else {
+      // Error setting up request
+      logger.error('Request Setup Error', error, {
+        message: error.message,
+        config: error.config,
+      });
     }
+    
     return Promise.reject(error);
   }
 );
@@ -94,7 +109,8 @@ export const coffeeService = {
       const response = await apiClient.get<CoffeeEntry[]>(url);
       return response.data;
     } catch (error) {
-      console.error('Error fetching coffees:', error);
+      logger.error('Error fetching coffees', error);
+      logApiError(API_ENDPOINTS.COFFEES, 'GET', error as AxiosError);
       throw new Error(handleApiError(error as AxiosError));
     }
   },
@@ -108,7 +124,8 @@ export const coffeeService = {
       const response = await apiClient.get<CoffeeEntry>(url);
       return response.data;
     } catch (error) {
-      console.error(`Error fetching coffee ${id}:`, error);
+      logger.error(`Error fetching coffee ${id}`, error);
+      logApiError(API_ENDPOINTS.COFFEE_BY_ID(id), 'GET', error as AxiosError);
       throw new Error(handleApiError(error as AxiosError));
     }
   },
@@ -122,7 +139,8 @@ export const coffeeService = {
       const response = await apiClient.get<CoffeeEntry>(url);
       return response.data;
     } catch (error) {
-      console.error(`Error fetching coffee by slug ${slug}:`, error);
+      logger.error(`Error fetching coffee by slug ${slug}`, error);
+      logApiError(API_ENDPOINTS.COFFEE_BY_SLUG(slug), 'GET', error as AxiosError);
       throw new Error(handleApiError(error as AxiosError));
     }
   },
@@ -148,7 +166,7 @@ export const coffeeService = {
       
       return { coffeeId, rating: 0, count: 0 };
     } catch (error) {
-      console.error(`Error fetching ratings for coffee ${coffeeId}:`, error);
+      logger.error(`Error fetching ratings for coffee ${coffeeId}`, error);
       return { coffeeId, rating: 0, count: 0 };
     }
   },
@@ -173,7 +191,8 @@ export const sellerService = {
       
       throw new Error(response.data.error || 'Failed to fetch sellers');
     } catch (error) {
-      console.error('Error fetching sellers:', error);
+      logger.error('Error fetching sellers', error);
+      logApiError(API_ENDPOINTS.SELLERS, 'GET', error as AxiosError);
       throw new Error(handleApiError(error as AxiosError));
     }
   },
@@ -192,7 +211,8 @@ export const sellerService = {
       
       throw new Error(response.data.error || 'Failed to fetch seller');
     } catch (error) {
-      console.error(`Error fetching seller ${id}:`, error);
+      logger.error(`Error fetching seller ${id}`, error);
+      logApiError(API_ENDPOINTS.SELLER_BY_ID(id), 'GET', error as AxiosError);
       throw new Error(handleApiError(error as AxiosError));
     }
   },
@@ -206,7 +226,8 @@ export const sellerService = {
       const response = await apiClient.get<CoffeeEntry[]>(url);
       return response.data;
     } catch (error) {
-      console.error(`Error fetching seller coffees for ${sellerId}:`, error);
+      logger.error(`Error fetching seller coffees for ${sellerId}`, error);
+      logApiError(API_ENDPOINTS.SELLER_COFFEES(sellerId), 'GET', error as AxiosError);
       throw new Error(handleApiError(error as AxiosError));
     }
   },
@@ -225,7 +246,7 @@ export const healthService = {
       const response = await apiClient.get(url);
       return response.status === 200;
     } catch (error) {
-      console.error('Health check failed:', error);
+      logger.error('Health check failed', error);
       return false;
     }
   },

@@ -7,14 +7,35 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { logger } from '../utils/logger';
+
+/**
+ * Initialize error handling
+ */
+if (__DEV__) {
+  // Log app startup
+  logger.info('Coffee Break App Starting');
+  
+  // Catch unhandled promise rejections
+  const originalHandler = global.ErrorUtils?.getGlobalHandler?.();
+  if (originalHandler) {
+    global.ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
+      logger.error('Unhandled Error (Global Handler)', error, { isFatal });
+      originalHandler(error, isFatal);
+    });
+  }
+}
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <StatusBar style="dark" />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
