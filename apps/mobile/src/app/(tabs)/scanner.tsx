@@ -135,7 +135,7 @@ export default function ScannerScreen() {
           onPress={requestCameraPermission}
           activeOpacity={0.8}
         >
-          <Camera size={20} color={colors.neutral.white} />
+          <Ionicons name="camera" size={20} color={colors.neutral.white} />
           <Text style={styles.permissionButtonText}>Grant Permission</Text>
         </TouchableOpacity>
       </View>
