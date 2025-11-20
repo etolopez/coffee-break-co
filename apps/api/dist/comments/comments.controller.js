@@ -8,6 +8,7 @@ exports.CommentsController = void 0;
 const tslib_1 = require("tslib");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const public_decorator_1 = require("../auth/decorators/public.decorator");
 const comments_service_1 = require("./comments.service");
 let CommentsController = class CommentsController {
     commentsService;
@@ -24,6 +25,8 @@ let CommentsController = class CommentsController {
 };
 exports.CommentsController = CommentsController;
 tslib_1.__decorate([
+    (0, public_decorator_1.Public)() // Make comments endpoint public
+    ,
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({
         summary: 'Get comments for a coffee',
