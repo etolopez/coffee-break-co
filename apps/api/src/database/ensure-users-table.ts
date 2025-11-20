@@ -9,11 +9,60 @@ import * as bcrypt from 'bcrypt';
 
 const logger = new Logger('EnsureUsersTable');
 
+/**
+ * Helper function to create user_profiles table
+ */
+async function createUserProfilesTable(prisma: PrismaClient): Promise<void> {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "user_profiles" (
+      "id" TEXT NOT NULL,
+      "userId" TEXT NOT NULL,
+      "bio" TEXT,
+      "location" TEXT,
+      "website" TEXT,
+      "preferences" JSONB,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL,
+      CONSTRAINT "user_profiles_pkey" PRIMARY KEY ("id")
+    );
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    CREATE UNIQUE INDEX IF NOT EXISTS "user_profiles_userId_key" ON "user_profiles"("userId");
+  `);
+
+  // Add foreign key if it doesn't exist
+  await prisma.$executeRawUnsafe(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_profiles_userId_fkey') THEN
+        ALTER TABLE "user_profiles" 
+        ADD CONSTRAINT "user_profiles_userId_fkey" 
+        FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+      END IF;
+    END $$;
+  `);
+  
+  logger.log('✅ User_profiles table created');
+}
+
 export async function ensureUsersTable(prisma: PrismaClient): Promise<boolean> {
   try {
     // Check if users table exists
     await prisma.$queryRaw`SELECT 1 FROM users LIMIT 1`;
     logger.log('✅ Users table exists');
+    
+    // Also check if user_profiles table exists (needed for registration)
+    try {
+      await prisma.$queryRaw`SELECT 1 FROM user_profiles LIMIT 1`;
+      logger.log('✅ User_profiles table exists');
+    } catch (error: any) {
+      if (error.message?.includes('does not exist') || error.message?.includes('relation')) {
+        logger.warn('⚠️  User_profiles table does not exist - creating it...');
+        await createUserProfilesTable(prisma);
+      }
+    }
+    
     return true;
   } catch (error: any) {
     if (
@@ -48,23 +97,7 @@ export async function ensureUsersTable(prisma: PrismaClient): Promise<boolean> {
         `);
 
         // Create user_profiles table
-        await prisma.$executeRawUnsafe(`
-          CREATE TABLE IF NOT EXISTS "user_profiles" (
-            "id" TEXT NOT NULL,
-            "userId" TEXT NOT NULL,
-            "bio" TEXT,
-            "location" TEXT,
-            "website" TEXT,
-            "preferences" JSONB,
-            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            "updatedAt" TIMESTAMP(3) NOT NULL,
-            CONSTRAINT "user_profiles_pkey" PRIMARY KEY ("id")
-          );
-        `);
-
-        await prisma.$executeRawUnsafe(`
-          CREATE UNIQUE INDEX IF NOT EXISTS "user_profiles_userId_key" ON "user_profiles"("userId");
-        `);
+        await createUserProfilesTable(prisma);
 
         // Create user_favorites table
         await prisma.$executeRawUnsafe(`
