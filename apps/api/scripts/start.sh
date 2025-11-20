@@ -28,25 +28,28 @@ fi
 
 echo "✅ DATABASE_URL is set (length: ${#DATABASE_URL} characters)"
 
-# Generate Prisma Client (in case it wasn't generated during build)
-echo "📦 Generating Prisma Client..."
-npm run prisma:generate
-PRISMA_GEN_EXIT=$?
-if [ $PRISMA_GEN_EXIT -ne 0 ]; then
-  echo "⚠️  Prisma generate failed (exit code: $PRISMA_GEN_EXIT), but continuing..."
-else
-  echo "✅ Prisma Client generated successfully"
-fi
-
-# Run database migrations
+# Run database migrations FIRST (before regenerating Prisma Client)
+# This ensures the database schema matches what Prisma Client expects
 echo "🔄 Running database migrations..."
 npm run prisma:deploy
 MIGRATION_EXIT=$?
 if [ $MIGRATION_EXIT -ne 0 ]; then
   echo "⚠️  Migration failed or already applied (exit code: $MIGRATION_EXIT)"
-  echo "📝 This is OK if tables already exist"
+  echo "📝 This might be OK if migrations already ran, but check logs above for errors"
 else
   echo "✅ Migrations applied successfully"
+fi
+
+# Generate Prisma Client AFTER migrations (to ensure it matches the database)
+echo "📦 Generating Prisma Client..."
+npm run prisma:generate
+PRISMA_GEN_EXIT=$?
+if [ $PRISMA_GEN_EXIT -ne 0 ]; then
+  echo "❌ Prisma generate failed (exit code: $PRISMA_GEN_EXIT)"
+  echo "📝 This is critical - Prisma Client must be generated"
+  exit 1
+else
+  echo "✅ Prisma Client generated successfully"
 fi
 
 # Seed database (only if not already seeded - will fail gracefully if data exists)
