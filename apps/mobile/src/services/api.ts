@@ -20,7 +20,7 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Add request interceptor for auth token and debugging
+// Add request interceptor for auth token
 apiClient.interceptors.request.use(
   async (config) => {
     // Add auth token if available
@@ -32,15 +32,6 @@ apiClient.interceptors.request.use(
     } catch (error) {
       logger.error('Error getting auth token', error);
     }
-
-    const fullUrl = buildApiUrl(config.url || '');
-    logger.info(`API Request: ${config.method?.toUpperCase()} ${fullUrl}`);
-    logger.debug('Request Config:', {
-      method: config.method,
-      url: config.url,
-      baseURL: config.baseURL,
-      headers: config.headers,
-    });
     return config;
   },
   (error) => {
@@ -49,41 +40,29 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Add response interceptor for debugging
+// Add response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => {
-    logger.info(`API Response: ${response.status} ${response.config.url || response.config.method}`);
-    logger.debug('Response Data:', response.data);
+    // Only log successful responses in development
+    if (__DEV__) {
+      logger.debug(`API Response: ${response.status} ${response.config.url || response.config.method}`);
+    }
     return response;
   },
   (error: AxiosError) => {
     const url = error.config?.url || 'unknown';
     const method = error.config?.method || 'unknown';
     
-    // Always log errors (not just in __DEV__) for Android visibility
+    // Only log errors (not successful requests)
     if (error.response) {
       // Server responded with error
       logApiError(url, method, error);
-      logger.error(`API Error Response: ${error.response.status}`, error, {
-        status: error.response.status,
-        statusText: error.response.statusText,
-        data: error.response.data,
-        headers: error.response.headers,
-      });
     } else if (error.request) {
       // Request made but no response
       logNetworkError(url, error);
-      logger.error('Network Error: No response received', error, {
-        code: error.code,
-        message: error.message,
-        timeout: error.config?.timeout,
-      });
     } else {
       // Error setting up request
-      logger.error('Request Setup Error', error, {
-        message: error.message,
-        config: error.config,
-      });
+      logger.error('Request Setup Error', error);
     }
     
     return Promise.reject(error);
@@ -313,7 +292,6 @@ export const favoritesService = {
     try {
       const url = buildApiUrl(`/api/users/favorites/${coffeeId}`);
       await apiClient.post(url);
-      logger.info(`Coffee ${coffeeId} added to favorites`);
     } catch (error) {
       logger.error(`Error adding coffee ${coffeeId} to favorites`, error);
       logApiError(`/api/users/favorites/${coffeeId}`, 'POST', error as AxiosError);
@@ -328,7 +306,6 @@ export const favoritesService = {
     try {
       const url = buildApiUrl(`/api/users/favorites/${coffeeId}`);
       await apiClient.delete(url);
-      logger.info(`Coffee ${coffeeId} removed from favorites`);
     } catch (error) {
       logger.error(`Error removing coffee ${coffeeId} from favorites`, error);
       logApiError(`/api/users/favorites/${coffeeId}`, 'DELETE', error as AxiosError);

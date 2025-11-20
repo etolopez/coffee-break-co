@@ -32,26 +32,22 @@ class Logger {
   }
 
   /**
-   * Debug log
+   * Debug log - Only in development
    */
   debug(message: string, ...args: any[]): void {
-    const formatted = this.formatMessage(LogLevel.DEBUG, message, ...args);
-    console.log(formatted);
-    // Also log to console.debug for better visibility
-    if (console.debug) {
-      console.debug(formatted);
+    if (__DEV__) {
+      const formatted = this.formatMessage(LogLevel.DEBUG, message, ...args);
+      console.log(formatted);
     }
   }
 
   /**
-   * Info log
+   * Info log - Only in development
    */
   info(message: string, ...args: any[]): void {
-    const formatted = this.formatMessage(LogLevel.INFO, message, ...args);
-    console.log(formatted);
-    // Use console.info if available
-    if (console.info) {
-      console.info(formatted);
+    if (__DEV__) {
+      const formatted = this.formatMessage(LogLevel.INFO, message, ...args);
+      console.log(formatted);
     }
   }
 
@@ -68,58 +64,37 @@ class Logger {
   }
 
   /**
-   * Error log - Always visible on Android
+   * Error log - Always visible
    */
   error(message: string, error?: any, ...args: any[]): void {
     const formatted = this.formatMessage(LogLevel.ERROR, message, ...args);
     
-    // Always log to console.error (most visible on Android)
+    // Log error message
     console.error('❌ ERROR:', formatted);
     
     if (error) {
-      // Log error details
-      console.error('❌ Error Object:', error);
-      console.error('❌ Error Message:', error?.message || 'No message');
-      console.error('❌ Error Stack:', error?.stack || 'No stack trace');
-      
-      // Log full error details as JSON for debugging
-      try {
-        console.error('❌ Error Details (JSON):', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-      } catch (e) {
-        console.error('❌ Could not stringify error:', e);
+      // Log error message and stack only (less verbose)
+      console.error('❌ Error:', error?.message || 'Unknown error');
+      if (__DEV__ && error?.stack) {
+        console.error('❌ Stack:', error.stack);
       }
     }
-    
-    // Also use console.warn for additional visibility
-    console.warn('⚠️ ERROR LOGGED:', formatted);
   }
 
   /**
-   * Log API errors with full context
+   * Log API errors with context
    */
   apiError(url: string, method: string, error: any): void {
-    this.error(`API Error: ${method} ${url}`, error, {
-      url,
-      method,
-      status: error?.response?.status,
-      statusText: error?.response?.statusText,
-      data: error?.response?.data,
-      code: error?.code,
-      message: error?.message,
-    });
+    const status = error?.response?.status;
+    const statusText = error?.response?.statusText;
+    this.error(`API Error: ${method} ${url} ${status ? `(${status} ${statusText})` : ''}`, error);
   }
 
   /**
    * Log network errors
    */
   networkError(url: string, error: any): void {
-    this.error(`Network Error: ${url}`, error, {
-      url,
-      code: error?.code,
-      message: error?.message,
-      isNetworkError: !error?.response,
-      isTimeout: error?.code === 'ECONNABORTED',
-    });
+    this.error(`Network Error: ${url}`, error);
   }
 }
 

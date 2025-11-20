@@ -54,15 +54,6 @@ const getApiBaseUrl = (): string => {
 
 export const API_BASE_URL = getApiBaseUrl();
 
-// Log the API URL in development for debugging
-if (__DEV__) {
-  console.log('🔗 API Base URL:', API_BASE_URL);
-  console.log('📱 Platform:', Platform.OS);
-  console.log('🌐 __DEV__:', __DEV__);
-  console.log('⚙️ Config URL:', Constants.expoConfig?.extra?.apiUrl);
-  console.log('🔧 Env URL:', process.env.EXPO_PUBLIC_API_URL);
-}
-
 /**
  * API endpoints
  */
