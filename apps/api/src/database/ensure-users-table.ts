@@ -46,6 +46,52 @@ async function createUserProfilesTable(prisma: PrismaClient): Promise<void> {
   logger.log('✅ User_profiles table created');
 }
 
+/**
+ * Helper function to create user_favorites table
+ */
+async function createUserFavoritesTable(prisma: PrismaClient): Promise<void> {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "user_favorites" (
+      "id" TEXT NOT NULL,
+      "userId" TEXT NOT NULL,
+      "coffeeId" TEXT NOT NULL,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "user_favorites_pkey" PRIMARY KEY ("id")
+    );
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    CREATE UNIQUE INDEX IF NOT EXISTS "user_favorites_userId_coffeeId_key" ON "user_favorites"("userId", "coffeeId");
+    CREATE INDEX IF NOT EXISTS "user_favorites_userId_idx" ON "user_favorites"("userId");
+    CREATE INDEX IF NOT EXISTS "user_favorites_coffeeId_idx" ON "user_favorites"("coffeeId");
+  `);
+
+  // Add foreign keys
+  await prisma.$executeRawUnsafe(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_favorites_userId_fkey') THEN
+        ALTER TABLE "user_favorites" 
+        ADD CONSTRAINT "user_favorites_userId_fkey" 
+        FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+      END IF;
+    END $$;
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_favorites_coffeeId_fkey') THEN
+        ALTER TABLE "user_favorites" 
+        ADD CONSTRAINT "user_favorites_coffeeId_fkey" 
+        FOREIGN KEY ("coffeeId") REFERENCES "coffees"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+      END IF;
+    END $$;
+  `);
+  
+  logger.log('✅ User_favorites table created');
+}
+
 export async function ensureUsersTable(prisma: PrismaClient): Promise<boolean> {
   try {
     // Check if users table exists
@@ -60,6 +106,17 @@ export async function ensureUsersTable(prisma: PrismaClient): Promise<boolean> {
       if (error.message?.includes('does not exist') || error.message?.includes('relation')) {
         logger.warn('⚠️  User_profiles table does not exist - creating it...');
         await createUserProfilesTable(prisma);
+      }
+    }
+
+    // Also check if user_favorites table exists (needed for favorites)
+    try {
+      await prisma.$queryRaw`SELECT 1 FROM user_favorites LIMIT 1`;
+      logger.log('✅ User_favorites table exists');
+    } catch (error: any) {
+      if (error.message?.includes('does not exist') || error.message?.includes('relation')) {
+        logger.warn('⚠️  User_favorites table does not exist - creating it...');
+        await createUserFavoritesTable(prisma);
       }
     }
     
@@ -100,55 +157,7 @@ export async function ensureUsersTable(prisma: PrismaClient): Promise<boolean> {
         await createUserProfilesTable(prisma);
 
         // Create user_favorites table
-        await prisma.$executeRawUnsafe(`
-          CREATE TABLE IF NOT EXISTS "user_favorites" (
-            "id" TEXT NOT NULL,
-            "userId" TEXT NOT NULL,
-            "coffeeId" TEXT NOT NULL,
-            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT "user_favorites_pkey" PRIMARY KEY ("id")
-          );
-        `);
-
-        await prisma.$executeRawUnsafe(`
-          CREATE UNIQUE INDEX IF NOT EXISTS "user_favorites_userId_coffeeId_key" ON "user_favorites"("userId", "coffeeId");
-          CREATE INDEX IF NOT EXISTS "user_favorites_userId_idx" ON "user_favorites"("userId");
-          CREATE INDEX IF NOT EXISTS "user_favorites_coffeeId_idx" ON "user_favorites"("coffeeId");
-        `);
-
-        // Add foreign keys
-        await prisma.$executeRawUnsafe(`
-          DO $$
-          BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_profiles_userId_fkey') THEN
-              ALTER TABLE "user_profiles" 
-              ADD CONSTRAINT "user_profiles_userId_fkey" 
-              FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-            END IF;
-          END $$;
-        `);
-
-        await prisma.$executeRawUnsafe(`
-          DO $$
-          BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_favorites_userId_fkey') THEN
-              ALTER TABLE "user_favorites" 
-              ADD CONSTRAINT "user_favorites_userId_fkey" 
-              FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-            END IF;
-          END $$;
-        `);
-
-        await prisma.$executeRawUnsafe(`
-          DO $$
-          BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_favorites_coffeeId_fkey') THEN
-              ALTER TABLE "user_favorites" 
-              ADD CONSTRAINT "user_favorites_coffeeId_fkey" 
-              FOREIGN KEY ("coffeeId") REFERENCES "coffees"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-            END IF;
-          END $$;
-        `);
+        await createUserFavoritesTable(prisma);
 
         logger.log('✅ Users tables created successfully!');
         
