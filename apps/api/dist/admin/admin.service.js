@@ -19,56 +19,66 @@ let AdminService = AdminService_1 = class AdminService {
      * Get dashboard statistics
      */
     async getDashboardStats() {
-        const [users, sellers, coffees, favorites] = await Promise.all([
-            this.prisma.user.count(),
-            this.prisma.seller.count(),
-            this.prisma.coffee.count(),
-            this.prisma.userFavorite.count(),
-        ]);
-        // Get users by role
-        const usersByRole = await this.prisma.user.groupBy({
-            by: ['role'],
-            _count: {
-                role: true,
-            },
-        });
-        // Get recent users
-        const recentUsers = await this.prisma.user.findMany({
-            take: 5,
-            orderBy: { createdAt: 'desc' },
-            select: {
-                id: true,
-                email: true,
-                name: true,
-                role: true,
-                createdAt: true,
-            },
-        });
-        // Get recent coffees
-        const recentCoffees = await this.prisma.coffee.findMany({
-            take: 5,
-            orderBy: { createdAt: 'desc' },
-            select: {
-                id: true,
-                coffeeName: true,
-                origin: true,
-                createdAt: true,
-            },
-        });
-        return {
-            stats: {
-                totalUsers: users,
-                totalSellers: sellers,
-                totalCoffees: coffees,
-                totalFavorites: favorites,
-            },
-            usersByRole: usersByRole.map((item) => ({
-                role: item.role,
-                count: item._count?.role || 0,
-            })),
-            recentUsers,
-            recentCoffees,
-        };
+        try {
+            const [users, sellers, coffees, favorites] = await Promise.all([
+                this.prisma.user.count(),
+                this.prisma.seller.count(),
+                this.prisma.coffee.count(),
+                this.prisma.userFavorite.count(),
+            ]);
+            // Get users by role
+            // In Prisma groupBy, _count: true returns a number (total count in group)
+            const usersByRole = await this.prisma.user.groupBy({
+                by: ['role'],
+                _count: true,
+            });
+            // Get recent users
+            const recentUsers = await this.prisma.user.findMany({
+                take: 5,
+                orderBy: { createdAt: 'desc' },
+                select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                    role: true,
+                    createdAt: true,
+                },
+            });
+            // Get recent coffees
+            const recentCoffees = await this.prisma.coffee.findMany({
+                take: 5,
+                orderBy: { createdAt: 'desc' },
+                select: {
+                    id: true,
+                    coffeeName: true,
+                    origin: true,
+                    createdAt: true,
+                },
+            });
+            return {
+                stats: {
+                    totalUsers: users,
+                    totalSellers: sellers,
+                    totalCoffees: coffees,
+                    totalFavorites: favorites,
+                },
+                usersByRole: usersByRole.map((item) => ({
+                    role: item.role,
+                    count: item._count || 0, // _count is a number in groupBy
+                })),
+                recentUsers,
+                recentCoffees,
+            };
+        }
+        catch (error) {
+            this.logger.error('Error getting dashboard stats', {
+                message: error.message,
+                code: error.code,
+                meta: error.meta,
+                stack: error.stack,
+            });
+            throw error;
+        }
     }
     /**
      * Get all users
