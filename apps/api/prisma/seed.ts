@@ -7,8 +7,106 @@
 import { PrismaClient } from '@prisma/client';
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
+
+/**
+ * Seed demo users for testing
+ */
+async function seedDemoUsers() {
+  const demoUsers = [
+    // Admin
+    {
+      email: 'admin@coffeebreak.com',
+      password: 'password',
+      name: 'Admin User',
+      role: 'admin',
+    },
+    // Sellers
+    {
+      email: 'seller@coffeebreak.com',
+      password: 'password',
+      name: 'Free Tier Seller',
+      role: 'seller',
+    },
+    {
+      email: 'seller@premiumcoffee.com',
+      password: 'password',
+      name: 'Premium Coffee Co',
+      role: 'seller',
+    },
+    {
+      email: 'seller@mountainview.com',
+      password: 'password',
+      name: 'Mountain View Roasters',
+      role: 'seller',
+    },
+    {
+      email: 'liquidsoul@coffeebreak.com',
+      password: 'password',
+      name: 'Liquid Soul',
+      role: 'seller',
+    },
+    {
+      email: 'basic@coffeebreak.com',
+      password: 'password',
+      name: 'Basic Coffee Co',
+      role: 'seller',
+    },
+    {
+      email: 'premium@coffeebreak.com',
+      password: 'password',
+      name: 'Premium Coffee Co',
+      role: 'seller',
+    },
+    {
+      email: 'enterprise@coffeebreak.com',
+      password: 'password',
+      name: 'Enterprise Coffee Co',
+      role: 'seller',
+    },
+    // Customers
+    {
+      email: 'customer@example.com',
+      password: 'password',
+      name: 'Demo Customer',
+      role: 'customer',
+    },
+    {
+      email: 'customer@coffeebreak.com',
+      password: 'password',
+      name: 'Coffee Lover',
+      role: 'customer',
+    },
+  ];
+
+  for (const userData of demoUsers) {
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    
+    await prisma.user.upsert({
+      where: { email: userData.email },
+      update: {
+        password: hashedPassword,
+        name: userData.name,
+        role: userData.role,
+      },
+      create: {
+        email: userData.email,
+        password: hashedPassword,
+        name: userData.name,
+        role: userData.role,
+        profile: {
+          create: {},
+        },
+      },
+    });
+    
+    console.log(`  ✅ Seeded user: ${userData.email} (${userData.role})`);
+  }
+
+  console.log(`✅ Seeded ${demoUsers.length} demo users`);
+}
 
 /**
  * Seed function to migrate JSON data to PostgreSQL
@@ -17,6 +115,10 @@ async function main() {
   console.log('🌱 Starting database seed...');
 
   try {
+    // Seed demo users first
+    console.log('👤 Seeding demo users...');
+    await seedDemoUsers();
+
     // Read JSON data files
     const dataDir = process.env['DATA_DIR'] 
       ? process.env['DATA_DIR']
