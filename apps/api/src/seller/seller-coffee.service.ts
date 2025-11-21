@@ -71,6 +71,25 @@ export class SellerCoffeeService {
   async getMyCoffees(userId: string): Promise<CoffeeEntry[]> {
     const sellerId = await this.getSellerIdFromUserId(userId);
     if (!sellerId) {
+      // Try to auto-create seller profile if user has seller role
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true, email: true, name: true },
+      });
+      
+      if (user?.role === 'seller') {
+        this.logger.log(`Auto-creating seller profile for user ${userId}`);
+        const seller = await this.prisma.seller.create({
+          data: {
+            companyName: user.name || user.email.split('@')[0],
+            uniqueSlug: `${user.email.split('@')[0]}-${Date.now()}`,
+            memberSince: new Date().getFullYear(),
+            userId: userId,
+          },
+        });
+        return this.coffeeService.getAllCoffees(seller.id);
+      }
+      
       throw new NotFoundException('Seller profile not found. Please create a seller profile first.');
     }
 

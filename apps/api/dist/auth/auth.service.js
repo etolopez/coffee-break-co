@@ -48,6 +48,16 @@ let AuthService = AuthService_1 = class AuthService {
                     profile: {
                         create: {}, // Create empty profile
                     },
+                    // Auto-create seller profile if role is 'seller'
+                    ...(role === 'seller' && {
+                        sellers: {
+                            create: {
+                                companyName: name || email.split('@')[0],
+                                uniqueSlug: `${email.split('@')[0]}-${Date.now()}`,
+                                memberSince: new Date().getFullYear(),
+                            },
+                        },
+                    }),
                 },
                 select: {
                     id: true,
@@ -57,7 +67,7 @@ let AuthService = AuthService_1 = class AuthService {
                     avatar: true,
                 },
             });
-            this.logger.log(`✅ User created successfully: ${user.id} - ${user.email}`);
+            this.logger.log(`✅ User created successfully: ${user.id} - ${user.email}${role === 'seller' ? ' (with seller profile)' : ''}`);
             // Generate JWT token
             const token = this.generateToken(user.id, user.email, user.role);
             this.logger.log(`User registered: ${user.email} (${user.role})`);
