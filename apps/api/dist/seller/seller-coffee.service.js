@@ -73,15 +73,40 @@ let SellerCoffeeService = SellerCoffeeService_1 = class SellerCoffeeService {
             if (user?.role === 'seller') {
                 this.logger.log(`Auto-creating seller profile for user ${userId}`);
                 const companyName = user.name || user.email.split('@')[0] || 'My Coffee Company';
-                const seller = await this.prisma.seller.create({
-                    data: {
-                        companyName,
-                        uniqueSlug: `${user.email.split('@')[0]}-${Date.now()}`,
-                        memberSince: new Date().getFullYear(),
-                        userId: userId,
-                    },
-                });
-                return this.coffeeService.getAllCoffees(seller.id);
+                // Try to create seller, handling missing columns gracefully
+                try {
+                    const seller = await this.prisma.seller.create({
+                        data: {
+                            companyName,
+                            uniqueSlug: `${user.email.split('@')[0]}-${Date.now()}`,
+                            memberSince: new Date().getFullYear(),
+                            userId: userId,
+                        },
+                    });
+                    return this.coffeeService.getAllCoffees(seller.id);
+                }
+                catch (createError) {
+                    // If coffeesUploaded column doesn't exist, try with raw SQL
+                    if (createError?.message?.includes('coffeesUploaded') || createError?.message?.includes('does not exist')) {
+                        this.logger.warn('coffeesUploaded column missing, using raw SQL to create seller');
+                        const uniqueSlug = `${user.email.split('@')[0]}-${Date.now()}`;
+                        // Use raw SQL to create seller without coffeesUploaded
+                        await this.prisma.$executeRawUnsafe(`
+              INSERT INTO sellers (id, "companyName", "uniqueSlug", "memberSince", "userId", "createdAt", "updatedAt")
+              VALUES (gen_random_uuid()::text, $1, $2, $3, $4, NOW(), NOW())
+              RETURNING id
+            `, companyName, uniqueSlug, new Date().getFullYear(), userId);
+                        // Fetch the created seller by uniqueSlug
+                        const seller = await this.prisma.seller.findUnique({
+                            where: { uniqueSlug },
+                        });
+                        if (seller) {
+                            return this.coffeeService.getAllCoffees(seller.id);
+                        }
+                        throw new Error('Failed to create seller profile');
+                    }
+                    throw createError;
+                }
             }
             throw new common_1.NotFoundException('Seller profile not found. Please create a seller profile first.');
         }

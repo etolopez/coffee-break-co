@@ -74,16 +74,8 @@ export class AuthService {
           profile: {
             create: {}, // Create empty profile
           },
-          // Auto-create seller profile if role is 'seller'
-          ...(role === 'seller' && {
-            sellers: {
-              create: {
-                companyName: name || email.split('@')[0] || 'My Coffee Company',
-                uniqueSlug: `${email.split('@')[0]}-${Date.now()}`,
-                memberSince: new Date().getFullYear(),
-              },
-            },
-          }),
+          // Note: Seller profile creation is handled separately to avoid migration issues
+          // It will be auto-created when seller tries to access their dashboard
         },
         select: {
           id: true,
