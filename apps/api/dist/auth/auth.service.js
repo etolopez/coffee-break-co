@@ -52,7 +52,7 @@ let AuthService = AuthService_1 = class AuthService {
                     ...(role === 'seller' && {
                         sellers: {
                             create: {
-                                companyName: name || email.split('@')[0],
+                                companyName: name || email.split('@')[0] || 'My Coffee Company',
                                 uniqueSlug: `${email.split('@')[0]}-${Date.now()}`,
                                 memberSince: new Date().getFullYear(),
                             },

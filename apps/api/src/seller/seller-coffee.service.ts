@@ -79,9 +79,10 @@ export class SellerCoffeeService {
       
       if (user?.role === 'seller') {
         this.logger.log(`Auto-creating seller profile for user ${userId}`);
+        const companyName = user.name || user.email.split('@')[0] || 'My Coffee Company';
         const seller = await this.prisma.seller.create({
           data: {
-            companyName: user.name || user.email.split('@')[0],
+            companyName,
             uniqueSlug: `${user.email.split('@')[0]}-${Date.now()}`,
             memberSince: new Date().getFullYear(),
             userId: userId,
