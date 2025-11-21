@@ -18,10 +18,10 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, typography, spacing, borderRadius, shadows } from '../../config/theme';
-import { useAuth } from '../../contexts/AuthContext';
-import { sellerCoffeeService } from '../../services/api';
-import { logger } from '../../utils/logger';
+import { colors, typography, spacing, borderRadius, shadows } from '../../../config/theme';
+import { useAuth } from '../../../contexts/AuthContext';
+import { sellerCoffeeService } from '../../../services/api';
+import { logger } from '../../../utils/logger';
 
 export default function CreateCoffeeScreen() {
   const router = useRouter();
