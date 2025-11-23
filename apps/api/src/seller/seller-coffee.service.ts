@@ -216,15 +216,8 @@ export class SellerCoffeeService {
       },
     });
 
-    // Increment seller's coffeesUploaded count
-    await this.prisma.seller.update({
-      where: { id: sellerId },
-      data: {
-        coffeesUploaded: {
-          increment: 1,
-        },
-      },
-    });
+    // Increment seller's coffeesUploaded count (best-effort; older schemas may lack the column)
+    await this.adjustSellerCoffeeCount(sellerId, 'increment');
 
     this.logger.log(`Coffee created: ${coffee.id} by seller ${sellerId}`);
 
@@ -319,17 +312,39 @@ export class SellerCoffeeService {
       where: { id: coffeeId },
     });
 
-    // Decrement seller's coffeesUploaded count
-    await this.prisma.seller.update({
-      where: { id: sellerId },
-      data: {
-        coffeesUploaded: {
-          decrement: 1,
-        },
-      },
-    });
+    // Decrement seller's coffeesUploaded count (best-effort)
+    await this.adjustSellerCoffeeCount(sellerId, 'decrement');
 
     this.logger.log(`Coffee deleted: ${coffeeId} by seller ${sellerId}`);
+  }
+
+  /**
+   * Adjust seller coffee counters while gracefully handling missing columns
+   */
+  private async adjustSellerCoffeeCount(
+    sellerId: string,
+    action: 'increment' | 'decrement',
+  ): Promise<void> {
+    try {
+      await this.prisma.seller.update({
+        where: { id: sellerId },
+        data: {
+          coffeesUploaded: {
+            [action]: 1,
+          },
+        },
+      });
+    } catch (error: any) {
+      // Gracefully handle environments where the column hasn't been migrated yet
+      if (error?.message?.includes('coffeesUploaded') || error?.code === 'P2021') {
+        this.logger.warn(
+          `Skipping coffeesUploaded ${action}; column missing in current schema`,
+          error?.message,
+        );
+        return;
+      }
+      throw error;
+    }
   }
 }
 

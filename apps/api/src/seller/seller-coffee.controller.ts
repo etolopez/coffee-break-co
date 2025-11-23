@@ -38,7 +38,20 @@ export class SellerCoffeeController {
   @ApiOperation({ summary: 'Get all coffees for current seller' })
   @ApiResponse({ status: 200, description: 'Coffees retrieved successfully' })
   async getMyCoffees(@CurrentUser() user: any) {
-    return this.sellerCoffeeService.getMyCoffees(user.id);
+    try {
+      this.logger.debug(`Fetching coffees for user ${user.id}`);
+      const result = await this.sellerCoffeeService.getMyCoffees(user.id);
+      this.logger.debug(`Found ${result.length} coffees for user ${user.id}`);
+      return result;
+    } catch (error: any) {
+      this.logger.error('Error fetching seller coffees', {
+        userId: user.id,
+        error: error.message,
+        stack: error.stack,
+        code: error.code,
+      });
+      throw error;
+    }
   }
 
   /**
@@ -59,7 +72,24 @@ export class SellerCoffeeController {
   @ApiOperation({ summary: 'Create a new coffee' })
   @ApiResponse({ status: 201, description: 'Coffee created successfully' })
   async createCoffee(@Body() coffeeData: any, @CurrentUser() user: any) {
-    return this.sellerCoffeeService.createCoffee(coffeeData, user.id);
+    try {
+      this.logger.log(`Creating coffee for user ${user.id}`, {
+        coffeeName: coffeeData.coffeeName,
+        origin: coffeeData.origin,
+      });
+      const result = await this.sellerCoffeeService.createCoffee(coffeeData, user.id);
+      this.logger.log(`Coffee created successfully: ${result.id}`);
+      return result;
+    } catch (error: any) {
+      this.logger.error('Error creating coffee', {
+        userId: user.id,
+        error: error.message,
+        stack: error.stack,
+        code: error.code,
+        meta: error.meta,
+      });
+      throw error;
+    }
   }
 
   /**
